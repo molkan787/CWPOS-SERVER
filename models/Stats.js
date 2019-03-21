@@ -13,12 +13,12 @@ module.exports = class Stats extends Model{
           required: ['day'],
 
           properties: {
-            day: 'integer',
-            date_added: 'integer',
-            cw: 'integer',
-            pp: 'integer',
-            rpp: 'integer',
-            dt: 'integer',
+            day: { type: 'integer' },
+            date_added: { type: 'integer' },
+            cw: { type: 'integer' },
+            pp: { type: 'integer' },
+            rpp: { type: 'integer' },
+            dt: { type: 'integer' },
           }
           
         };

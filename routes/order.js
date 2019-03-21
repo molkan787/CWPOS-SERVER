@@ -1,17 +1,18 @@
 const errors = require('restify-errors');
 const Order = require('../models/Order');
+const Stats = require('../models/Stats');
+const time = require('../utils/time');
 
 module.exports = async (req, res, next) => {
-    const {username, password} = req.body;
+    const {orderData, stats} = req.body;
+    orderData.date_added = time.now();
+    orderData.total *= 100;
     try {
-        const token = await auth.login(username, password);
-        if(token){
-            res.send({token});
-        }else{
-            return next(new errors.UnauthorizedError('Authentication failed'));
-        }
-        
+        await Order.query().insert(orderData);
+        await Stats.add(stats);
+        res.send({status: 'OK'});
+        next();
     } catch (error) {
-        return next(new errors.InternalError('Error:003 ' + error));
+        return next(new errors.InternalError('Error:004 ' + error));
     }
 };

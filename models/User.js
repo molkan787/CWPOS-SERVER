@@ -11,14 +11,14 @@ module.exports = class User extends Model{
             type: 'object',
 
             properties: {
-                id: 'integer',
-                user_type: 'integer',
-                username: 'string',
-                password: 'string',
-                first_name: 'string',
-                last_name: 'string',
-                date_added: 'integer',
-                is_active: 'integer'
+                id: { type: 'integer' },
+                user_type: { type: 'integer' },
+                username: { type: 'string' },
+                password: { type: 'string' },
+                first_name: { type: 'string' },
+                last_name: { type: 'string' },
+                date_added: { type: 'integer' },
+                is_active: { type: 'integer' }
             }
         };
     }

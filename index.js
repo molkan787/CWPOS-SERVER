@@ -1,5 +1,6 @@
 const restify = require('restify');
 const errors = require('restify-errors');
+const corsMiddleware = require('restify-cors-middleware');
 require('./models/index')();
 
 const auth = require('./auth/auth');
@@ -7,13 +8,14 @@ const router = require('./routes/index');
 
 const server = restify.createServer();
 
-server.use(
-  function crossOrigin(req, res, next){
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "X-Requested-With");
-    return next();
-  }
-);
+const cors = corsMiddleware({
+  preflightMaxAge: 5, //Optional
+  origins: ['*'],
+  allowHeaders: ['API-Token'],
+  exposeHeaders: ['API-Token-Expiry']
+});
+server.pre(cors.preflight);
+server.use(cors.actual);
 server.use((req, res, next) => {
     if(req.route.path == '/auth'){
       return next();
@@ -29,10 +31,10 @@ server.use((req, res, next) => {
   }
 );
 server.use(restify.plugins.queryParser());
-server.use(restify.plugins.bodyParser());
+server.use(restify.plugins.bodyParser({ mapParams: false }));
 
 router(server);
 
-server.listen(8080, function() {
+server.listen(8081, function() {
   console.log('%s listening at %s', server.name, server.url);
 });

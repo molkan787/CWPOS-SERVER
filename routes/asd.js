@@ -10,8 +10,7 @@ module.exports = async (req, res, next) => {
         const stats = await Stats.getTodays();
         res.send({
             categories,
-            products: Product.mapByCategory(products, true),
-            productsByIds: Product.mapById(products),
+            products: products,
             stats
         });
         next();

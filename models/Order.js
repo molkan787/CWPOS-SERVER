@@ -9,15 +9,18 @@ module.exports = class Order extends Model{
     static get jsonSchema(){
         return {
             type: 'object',
+            required: ['user_id', 'client_id', 'total', 'pay_method', 'totals', 'items', 'date_added'],
 
             properties: {
-                id: 'integer',
-                user_id: 'integer',
-                client_id: 'integer',
-                total: 'integer',
-                pay_method: 'string',
-                totals: 'object',
-                
+                id: {type: 'integer'},
+                user_id: {type: 'integer'},
+                client_id: {type: 'integer'},
+                total: {type: 'integer'},
+                pay_method: {type: 'string'},
+                totals: {type: 'object'},
+                items: {type: 'object'},
+                receipt: {type: 'integer'},
+                date_added: {type: 'integer'},
             }
         };
     }

@@ -12,10 +12,10 @@ module.exports = class UserToken extends Model{
             required: ['user_id', 'token', 'date_added'],
 
             properties: {
-                user_id: 'integer',
-                token: 'string',
-                date_added: 'integer',
-                is_active: 'integer'
+                user_id: { type: 'integer' },
+                token: { type: 'string' },
+                date_added: { type: 'integer' },
+                is_active: { type: 'integer' }
             }
         };
     }

@@ -19,6 +19,7 @@ module.exports = class Order extends Model{
                 pay_method: {type: 'string'},
                 totals: {type: 'object'},
                 items: {type: 'object'},
+                other_data: {type: 'object'},
                 receipt: {type: 'integer'},
                 date_added: {type: 'integer'},
             }

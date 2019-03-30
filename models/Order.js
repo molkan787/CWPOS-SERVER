@@ -24,6 +24,28 @@ module.exports = class Order extends Model{
                 date_added: {type: 'integer'},
             }
         };
+    };
+
+    static get relationMappings(){
+        return {
+            client: {
+                relation: Model.BelongsToOneRelation,
+                modelClass: __dirname + '/Client',
+                join: {
+                    from: 'orders.client_id',
+                    to: 'clients.id'
+                }
+            },
+            cashier: {
+                relation: Model.BelongsToOneRelation,
+                modelClass: __dirname + '/User',
+                join: {
+                    from: 'orders.user_id',
+                    to: 'users.id'
+                }
+            }
+        };
     }
+
 
 }

@@ -31,7 +31,7 @@ server.use((req, res, next) => {
   }
 );
 server.use(restify.plugins.queryParser());
-server.use(restify.plugins.bodyParser({ mapParams: false }));
+server.use(restify.plugins.bodyParser({ mapParams: false, requestBodyOnGet: true }));
 
 router(server);
 

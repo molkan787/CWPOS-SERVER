@@ -23,6 +23,19 @@ module.exports = class PrepaidCard extends Model{
         }
     }
 
+    static get relationMappings(){
+        return {
+            client: {
+                relation: Model.BelongsToOneRelation,
+                modelClass: __dirname + '/Client',
+                join: {
+                    from: 'prepaid_cards.client_id',
+                    to: 'clients.id'
+                }
+            },
+        };
+    }
+
     static async addBalance(cardId, amount){
         const _amount = parseInt(amount).toFixed(0);
         try {

@@ -22,6 +22,19 @@ module.exports = class LoyaltyCard extends Model{
         }
     }
 
+    static get relationMappings(){
+        return {
+            client: {
+                relation: Model.BelongsToOneRelation,
+                modelClass: __dirname + '/Client',
+                join: {
+                    from: 'loyalty_cards.client_id',
+                    to: 'clients.id'
+                }
+            },
+        };
+    }
+
     static debit(barcode, amount){
         const _amount = parseInt(amount);
         return new Promise(async (resolve, reject) => {

@@ -21,4 +21,21 @@ module.exports = class Product extends Model{
         }
     }
 
+    static async put(data){
+        const {name, product_type, price} = data;
+        let p = {name, price, product_type: parseInt(product_type)};
+        try {
+            if(data.id == 'new'){
+                p.category_id = data.category_id;
+                p = await this.query().insert(p);
+                return p;
+            }else{
+                await this.query().update(p).where({id: data.id});
+                return p;
+            }
+        } catch (error) {
+            throw new Error(error);
+        }
+    }
+
 }

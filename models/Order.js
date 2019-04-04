@@ -43,6 +43,14 @@ module.exports = class Order extends Model{
                     from: 'orders.user_id',
                     to: 'users.id'
                 }
+            },
+            transaction: {
+                relation: Model.BelongsToOneRelation,
+                modelClass: __dirname + '/Transaction',
+                join: {
+                    from: 'transactions.order_id',
+                    to: 'orders.id'
+                }
             }
         };
     }

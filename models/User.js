@@ -1,4 +1,6 @@
+const md5 = require('md5');
 const {Model} = require('objection');
+const time = require('../utils/time');
 
 module.exports = class User extends Model{
 
@@ -21,6 +23,24 @@ module.exports = class User extends Model{
                 is_active: { type: 'integer' }
             }
         };
+    }
+
+    static async put(data){
+        try {
+            const {id, first_name, last_name, user_type, username, password} = data;
+            const udata = {first_name, last_name, user_type, username};
+            if(password.length >= 4){
+                udata.password = md5(password);
+            }
+            if(id == 'new'){
+                udata.date_added = time.now();
+                return await User.query().insert(udata);
+            }else{
+                return await User.query().update(udata).where('id', id);
+            }
+        } catch (error) {
+            throw new Error(error);
+        }
     }
 
 }

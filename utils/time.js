@@ -2,6 +2,10 @@ const daySeconds = 3600 * 24;
 
 class TimeHelper{
 
+    get daySeconds(){
+        return daySeconds;
+    }
+
     today(){
         return this.roundToDay(this.now());
     }
@@ -12,6 +16,10 @@ class TimeHelper{
 
     roundToDay(time){
         return time - (time % daySeconds)
+    }
+
+    todayDate(){
+        return this.timestampToDate(this.now());
     }
 
     timestampToDate(unixtimestamp, includeTime){

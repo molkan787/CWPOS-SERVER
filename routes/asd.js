@@ -18,6 +18,6 @@ module.exports = async (req, res, next) => {
         });
         next();
     } catch (error) {
-        next(new errors.InternalError('Error:002 '));
+        return next(new errors.InternalError('Error:002 '));
     }
 };

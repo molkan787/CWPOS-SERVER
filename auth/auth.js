@@ -11,9 +11,9 @@ module.exports = class Auth{
                 const user = await User.query().findOne({username});
                 if(user){
                     const hashed_password = md5(password);
-                    if(user.password === hashed_password){
+                    if(user.password == hashed_password){
                         Auth.genToken(user.id).then(token => {
-                            resolve(token);
+                            resolve({token, user});
                         }).catch(error => {
                             reject(error);
                         });
@@ -25,7 +25,7 @@ module.exports = class Auth{
                 }
                 
             } catch (error) {
-                reject('Login: Function Scope');
+                reject(error);
             }
         });
 
@@ -40,7 +40,7 @@ module.exports = class Auth{
                 else
                     resolve(false);
             } catch (error) {
-                reject();
+                reject(error);
             }
 
         });

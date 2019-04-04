@@ -10,6 +10,8 @@ const capture = require('./capture');
 const client = require('./client');
 const clients = require('./clients');
 const users = require('./users');
+const user = require('./user');
+const delUser = require('./delUser');
 const product = require('./product');
 const delProduct = require('./delProduct');
 
@@ -22,6 +24,7 @@ module.exports = server => {
     server.post('/prepaid/get', getPrepaids);
     server.post('/loyalty/get', getLoyalty);
     server.post('/users', users);
+    server.post('/user', user);
 
     server.post('/auth', auth);
     server.post('/order', order);
@@ -31,4 +34,5 @@ module.exports = server => {
     server.post('/capture/:method', capture);
 
     server.del('/product/:id', delProduct);
+    server.del('/user/:id', delUser);
 };

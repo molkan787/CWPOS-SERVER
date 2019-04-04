@@ -11,7 +11,7 @@ const server = restify.createServer();
 const cors = corsMiddleware({
   preflightMaxAge: 5, //Optional
   origins: ['*'],
-  allowHeaders: ['API-Token'],
+  allowHeaders: ['Authorization'],
   exposeHeaders: ['API-Token-Expiry']
 });
 server.pre(cors.preflight);
@@ -20,12 +20,15 @@ server.use((req, res, next) => {
     if(req.route.path == '/auth'){
       return next();
     }else{
-      auth.checkToken('mwdIeBRxwZTD88Qp1MAHky1eh8pbJL').then(isValid => {
+      const token = req.headers['authorization'];
+      auth.checkToken(token).then(isValid => {
         if(isValid){
           return next();
         }else{
           return next(new errors.UnauthorizedError());
         }
+      }).catch(error => {
+        console.log('Error:', error);
       });
     }
   }
@@ -38,3 +41,7 @@ router(server);
 server.listen(8081, function() {
   console.log('%s listening at %s', server.name, server.url);
 });
+
+const reports = require('./reports/index');
+
+reports.genDailySales(1554249600);

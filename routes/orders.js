@@ -20,6 +20,6 @@ module.exports = async (req, res, next) => {
 
         res.send(resMaker.success({items: orders}));
     } catch (error) {
-        return next(new errors.InternalError('ERROR:009' + error));
+        return next(new errors.InternalError('ERROR:009'));
     }
 };

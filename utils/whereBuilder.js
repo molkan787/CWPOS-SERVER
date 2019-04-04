@@ -7,12 +7,13 @@ function _add(cc, raw){
 
 module.exports = class WhereBuilder{
 
-    static dateRange(params){
+    static dateRange(params, dateProp){
+        const colName = dateProp || 'date_added';
         let q = '';
         if(params.date_from)
-            q = 'date_added >= ' + params.date_from;
+            q = colName + ' >= ' + params.date_from;
         if(params.date_to)
-            q = _add(q, 'date_added <= ' + time.addDay(params.date_to));
+            q = _add(q, colName + ' < ' + time.addDay(params.date_to));
 
         return raw(q);
     }

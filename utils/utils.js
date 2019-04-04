@@ -12,7 +12,7 @@ module.exports = class Utils{
     }
 
     static rndSlug(suffix){
-        return time.todayDate() + ' - ' + this.rndStr(8) + (suffix || '');
+        return time.now() + '-' + this.rndStr(8) + (suffix || '');
     }
 
     static rndStr(length) {

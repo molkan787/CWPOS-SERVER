@@ -17,8 +17,7 @@ module.exports = class Reports {
             const stats = await Stats.getTodays();
             const date = time.timestampToDate(day);
 
-            summary.daily({...stats, ...data, date});
-            return true;
+            return await summary.daily({...stats, ...data, date});;
         } catch (error) {
             console.log(error);
             return false;
@@ -33,7 +32,7 @@ module.exports = class Reports {
             const stats = await Stats.query().whereRaw(cond2);
 
             const data = this.prepareWeeklySummaryData(orders, stats, date_from, date_to);
-            summary.weekly(data);
+            return await summary.weekly(data);
         } catch (error) {
             console.log(error);
             return false;
@@ -46,8 +45,7 @@ module.exports = class Reports {
             const orders = await Order.query().eager('[cashier, transaction.[prepaid, loyalty]]').whereRaw(cond);
             const data = this.prepareDailySalesData(orders);
 
-            sales.daily(data);
-            return true;
+            return await sales.daily(data);
         } catch (error) {
             console.log(error);
             return false;
@@ -178,7 +176,7 @@ module.exports = class Reports {
             row.total = order.total;
             row.payment = this.getPaymentText(order);
             row.discount = order.totals.discount;
-            row.discount_r = '---';
+            row.discount_r = '  ---';
 
             result.push(row);
         }

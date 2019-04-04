@@ -32,43 +32,50 @@ module.exports = class Sales{
     }
 
     static daily(orders){
-        const wb = new xl.Workbook();
-        this.initStyle(wb);
-        const ws = wb.addWorksheet('Reports');
-        addDailyHead(ws);
-        setWS(ws);
-        setRow(2);
-        resetCol();
-
-        for(let i = 0; i < orders.length; i++){
-            ws.row(i + 2).setHeight(30);
-            setRow(i + 2);
+        return new Promise((resolve, reject) => {
+            const wb = new xl.Workbook();
+            this.initStyle(wb);
+            const ws = wb.addWorksheet('Reports');
+            addDailyHead(ws);
+            setWS(ws);
+            setRow(2);
             resetCol();
-            const o = orders[i];
-            _str(o.id + '');
-            _str(o.date);
-            _num(o.cw);
-            _num(o.pp);
-            _num(o.rpp);
-            _num(o.dt);
-            _str(o.ticket);
-            _str(o.cashier);
-            _price_m(o.total);
-            _str(o.payment);
-            _strArr(o.washes);
-            _strArr(o.extras);
-            _price(o.discount);
-            _str(o.discount_r);
-            _strArr(o.newPrepaids);
-            _strArr(o.reloadPrepaids);
-            _strArr(o.detailing);
-            _strArr(o.otheritems);
-        }
 
-        const filename = utils.rndSlug('.xlsx');
-        wb.write('files/' + filename);
-        console.log(`File "${filename}" was written!`);
-        return filename;
+            for(let i = 0; i < orders.length; i++){
+                ws.row(i + 2).setHeight(30);
+                setRow(i + 2);
+                resetCol();
+                const o = orders[i];
+                _str(o.id + '');
+                _str(o.date);
+                _num(o.cw);
+                _num(o.pp);
+                _num(o.rpp);
+                _num(o.dt);
+                _str(o.ticket);
+                _str(o.cashier);
+                _price_m(o.total);
+                _str(o.payment);
+                _strArr(o.washes);
+                _strArr(o.extras);
+                _price(o.discount);
+                _str(o.discount_r);
+                _strArr(o.newPrepaids);
+                _strArr(o.reloadPrepaids);
+                _strArr(o.detailing);
+                _strArr(o.otheritems);
+            }
+
+            const filename = utils.rndSlug('.xlsx');
+            wb.write('files/' + filename, err => {
+                if(err){
+                    reject(err);
+                }else{
+                    console.log(`File "${filename}" was written!`);
+                    resolve(filename);
+                }
+            });
+        });
     }
 
 }

@@ -14,10 +14,13 @@ const user = require('./user');
 const delUser = require('./delUser');
 const product = require('./product');
 const delProduct = require('./delProduct');
+const reports = require('./reports');
 
 module.exports = server => {
     server.get('/asd', asd);
     server.get('/client/:phone', client);
+
+    server.get('/reports/:day', reports);
 
     server.post('/clients', clients);
     server.post('/orders', orders);

@@ -19,7 +19,7 @@ module.exports = async (req, res, next) => {
         if(payment){
             await addTransaction(payment, _order);
         }
-        res.send({status: 'OK'});
+        res.send({status: 'OK', nextOrderId: _order.id + 1});
         next();
     } catch (error) {
         console.log(error);
@@ -36,6 +36,8 @@ async function addTransaction(payment, order){
     }else if(payment.type == 'loyalty'){
         const card = await LoyaltyCard.query().findOne({barcode});
         if(card) cardId = card.id;
+    }else{
+        return;
     }
 
     await Transaction.query().insert({

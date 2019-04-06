@@ -20,12 +20,12 @@ const cors = corsMiddleware({
 server.pre(cors.preflight);
 server.use(cors.actual);
 server.use((req, res, next) => {
-    if(req.route.path == '/auth'){
+    if(req.route.path == '/auth' || req.route.path.split('/')[1] == 'download'){
       return next();
     }else{
       const token = req.headers['authorization'] || '---';
       auth.checkToken(token).then(isValid => {
-        if(isValid || true){ // $TMP
+        if(isValid){
           return next();
         }else{
           return next(new errors.UnauthorizedError());

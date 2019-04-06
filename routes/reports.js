@@ -1,11 +1,17 @@
-const fs = require('fs');
 const errors = require('restify-errors');
 const reports = require('../reports/index');
+const security = require('../security');
+const resMaker = require('../utils/response');
 
 module.exports = async (req, res, next) => {
     try {
-        const params = {day: parseInt(req.params.day), type: 'daily-sales'}
-        await generateReport(params, res); // $TMP
+        const filename = await generateReport(req.body);
+        const signature = security.signContent(filename);
+        res.send(resMaker.success({
+            filename,
+            signature,
+            params: req.body,
+        }));
         next();
     } catch (error) {
         console.log(error)
@@ -13,7 +19,7 @@ module.exports = async (req, res, next) => {
     }
 };
 
-async function generateReport(params, res){
+async function generateReport(params){
     const type = params.type;
     let filename = null;
     switch (type) {
@@ -31,13 +37,8 @@ async function generateReport(params, res){
     }
 
     if(filename){
-        const readStream = fs.createReadStream(`${appRoot}/files/${filename}`);
-        res.writeHead(200, {
-            "Content-Type": 'application/octet-stream',
-            "Content-Disposition": "attachment; filename=" + filename,
-        });
-        readStream.pipe(res);
+        return filename;
     }else{
-        throw new Error('Unknow error during report generation.');
+        throw new Error('Unknow Reports type.');
     }
 }

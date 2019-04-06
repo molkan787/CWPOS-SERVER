@@ -15,12 +15,13 @@ const delUser = require('./delUser');
 const product = require('./product');
 const delProduct = require('./delProduct');
 const reports = require('./reports');
+const download = require('./download');
+const setReceiptFlag = require('./setReceiptFlag');
 
 module.exports = server => {
     server.get('/asd', asd);
     server.get('/client/:phone', client);
-
-    server.get('/reports/:day', reports);
+    server.get('/download/:filename/:signature/:returnFilename', download);
 
     server.post('/clients', clients);
     server.post('/orders', orders);
@@ -28,7 +29,9 @@ module.exports = server => {
     server.post('/loyalty/get', getLoyalty);
     server.post('/users', users);
     server.post('/user', user);
+    server.post('/setReceiptFlag', setReceiptFlag);
 
+    server.post('/reports', reports);
     server.post('/auth', auth);
     server.post('/order', order);
     server.post('/product', product);

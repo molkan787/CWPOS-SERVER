@@ -11,7 +11,7 @@ module.exports = class Client extends Model{
     static get jsonSchema(){
         return {
             type: 'object',
-            required: ['phone', 'first_name', 'date_added'],
+            required: ['phone', 'first_name'],
 
             properties: {
                 id: {type: 'integer'},
@@ -24,6 +24,27 @@ module.exports = class Client extends Model{
                 date_added: {type: 'integer'},
             }
         }
+    }
+
+    static get relationMappings(){
+        return {
+            prepaid: {
+                relation: Model.BelongsToOneRelation,
+                modelClass: __dirname + '/PrepaidCard',
+                join: {
+                    from: 'prepaid_cards.client_id',
+                    to: 'clients.id'
+                }
+            },
+            loyalty: {
+                relation: Model.BelongsToOneRelation,
+                modelClass: __dirname + '/LoyaltyCard',
+                join: {
+                    from: 'loyalty_cards.client_id',
+                    to: 'clients.id'
+                }
+            },
+        };
     }
 
     static async getClientId(clientData){

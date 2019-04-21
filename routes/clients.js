@@ -8,6 +8,7 @@ module.exports = async (req, res, next) => {
         const offset = req.body.offset || 0;
         const phone = (req.body.phone || '').replace(/\s/g, '');
         const clients = await Client.query().where({is_company: 0})
+        .eager('[prepaid, loyalty]')
         .andWhere(wb.dateRange(req.body)).andWhere('phone', 'like', `%${phone}%`)
         .offset(offset).limit(10).orderBy('id', 'DESC');
         res.send(resMaker.success({items: clients}));

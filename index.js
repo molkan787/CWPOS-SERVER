@@ -1,6 +1,7 @@
 const path = require('path');
 global.appRoot = path.resolve(__dirname);
 
+const config = require('./config');
 const restify = require('restify');
 const errors = require('restify-errors');
 const corsMiddleware = require('restify-cors-middleware');
@@ -25,8 +26,8 @@ server.use((req, res, next) => {
     }else{
       const token = req.headers['authorization'] || '---';
       auth.checkToken(token).then(isValid => {
-        if(isValid){
-          return next();
+        if(isValid || config.debug){
+          next();
         }else{
           return next(new errors.UnauthorizedError());
         }

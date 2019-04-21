@@ -4,10 +4,11 @@ const Client = require('../models/Client');
 
 module.exports = async (req, res, next) => {
     try {
-        const {by, ref} = req.params;
-        const clientData = await (by == 'id' ? Client.query().findById(ref) : Client.query().findOne({phone: ref}));
+        const phone = req.params.phone;
+        const clientData = await Client.query().findOne({phone});
         if(clientData){
-            res.send(resMaker.success({data: clientData}));
+            clientData.history = await Client.getClientHostory(clientData.id);
+            res.send(resMaker.success({clientData}));
         }else{
             res.send(resMaker.fail('NOT_FOUND'));
         }

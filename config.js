@@ -4,4 +4,8 @@ module.exports = class Config{
         return 'AGzF8aRlnZ0z7Hx0ZRlnZ0AGzF8az7H';
     }
 
+    static get debug(){
+        return true;
+    }
+
 }

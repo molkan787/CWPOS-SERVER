@@ -7,7 +7,10 @@ const getPrepaids = require('./getPrepaids');
 const getLoyalty = require('./getLoyalty');
 const loyalty = require('./loyalty');
 const capture = require('./capture');
+const clientHistory = require('./clientHistory');
 const client = require('./client');
+const editClient = require('./editClient');
+const delClient = require('./delClient');
 const clients = require('./clients');
 const users = require('./users');
 const user = require('./user');
@@ -20,7 +23,8 @@ const setReceiptFlag = require('./setReceiptFlag');
 
 module.exports = server => {
     server.get('/asd', asd);
-    server.get('/client/:phone', client);
+    server.get('/client_history/:phone', clientHistory);
+    server.get('/client/:by/:ref', client);
     server.get('/download/:filename/:signature/:returnFilename', download);
 
     server.post('/clients', clients);
@@ -38,7 +42,9 @@ module.exports = server => {
     server.post('/prepaid/:action', prepaid);
     server.post('/loyalty/:action', loyalty);
     server.post('/capture/:method', capture);
+    server.post('/client', editClient);
 
     server.del('/product/:id', delProduct);
     server.del('/user/:id', delUser);
+    server.del('/client/:id', delClient);
 };

@@ -74,6 +74,7 @@ module.exports = class Client extends Model{
                     result.push({
                         date: time.timestampToDate(_order.date_added),
                         amount: _order.total / 100,
+                        receipt: _order.receipt,
                     });
                 }
             }

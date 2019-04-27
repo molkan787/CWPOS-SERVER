@@ -22,6 +22,7 @@ const reports = require('./reports');
 const download = require('./download');
 const setReceiptFlag = require('./setReceiptFlag');
 const settings = require('./settings');
+const editCardBalance = require('./editCardBalance');
 
 module.exports = server => {
     server.get('/asd', asd);
@@ -48,6 +49,7 @@ module.exports = server => {
     server.post('/capture/:method', capture);
     server.post('/client', editClient);
     server.post('/settings', settings.set);
+    server.post('/editCardBalance', editCardBalance);
 
     server.del('/product/:id', delProduct);
     server.del('/user/:id', delUser);

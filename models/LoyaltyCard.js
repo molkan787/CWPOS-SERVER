@@ -58,4 +58,10 @@ module.exports = class LoyaltyCard extends Model{
         });
     }
 
+    static async addValue(cardId, amount){
+        await this.query().patch({
+            balance: raw('balance + ' + parseInt(amount))
+        }).where({id: cardId});
+    }
+
 }

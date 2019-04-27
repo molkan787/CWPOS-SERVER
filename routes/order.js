@@ -9,13 +9,16 @@ const Transaction = require('../models/Transaction');
 const time = require('../utils/time');
 
 module.exports = async (req, res, next) => {
-    const {orderData, stats, payment} = req.body;
+    const {orderData, stats, payment, invoiceData, loyaltyCardId} = req.body;
     orderData.date_added = time.now();
 
-    if(orderData.pay_method == 'invoice_ari' && orderData.invoiceData.clientName){
-        orderData.client_id = await Client.getCompanyIdByName(orderData.invoiceData.clientName);
+    if(orderData.pay_method == 'invoice_ari' && invoiceData.clientName){
+        orderData.client_id = await Client.getCompanyIdByName(invoiceData.clientName);
     }
-    delete orderData.invoiceData;
+    if(loyaltyCardId > 0){
+        // Adding 10% of the orde value to loyalty points
+        LoyaltyCard.addValue(loyaltyCardId, orderData.total / 10);
+    }
 
     try {
         const _order = await Order.query().insert(orderData);

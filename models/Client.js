@@ -1,5 +1,6 @@
-const {Model} = require('objection');
+const {Model, raw} = require('objection');
 const time = require('../utils/time');
+const {sqlEscape} = require('../utils/utils');
 const Order = require('./Order');
 
 module.exports = class Client extends Model{
@@ -11,7 +12,7 @@ module.exports = class Client extends Model{
     static get jsonSchema(){
         return {
             type: 'object',
-            required: ['phone', 'first_name'],
+            required: ['first_name'],
 
             properties: {
                 id: {type: 'integer'},
@@ -19,7 +20,7 @@ module.exports = class Client extends Model{
                 phone: {type: 'string'},
                 email: {type: 'string'},
                 first_name: {type: 'string'},
-                first_name: {type: 'string'},
+                last_name: {type: 'string'},
                 want_receipt: {type: 'integer'},
                 date_added: {type: 'integer'},
             }
@@ -82,6 +83,21 @@ module.exports = class Client extends Model{
         } catch (error) {
             throw new Error(error);
         }
+    }
+
+    static async getCompanyIdByName(name){
+        let company = await this.query().findOne(raw(`LOWER(first_name) = '${sqlEscape(name)}'`));
+        if(!company){
+            company = await this.query().insert({
+                phone: '',
+                first_name: name,
+                last_name: '',
+                email: '',
+                is_company: 1,
+                date_added: time.now(),
+            });
+        }
+        return company.id;
     }
 
 }

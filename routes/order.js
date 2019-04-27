@@ -1,5 +1,6 @@
 const errors = require('restify-errors');
 const Order = require('../models/Order');
+const Client = require('../models/Client');
 const Stats = require('../models/Stats');
 const Invoice = require('../models/Invoice');
 const PrepaidCard = require('../models/PrepaidCard');
@@ -10,6 +11,12 @@ const time = require('../utils/time');
 module.exports = async (req, res, next) => {
     const {orderData, stats, payment} = req.body;
     orderData.date_added = time.now();
+
+    if(orderData.pay_method == 'invoice_ari' && orderData.invoiceData.clientName){
+        orderData.client_id = await Client.getCompanyIdByName(orderData.invoiceData.clientName);
+    }
+    delete orderData.invoiceData;
+
     try {
         const _order = await Order.query().insert(orderData);
         await Stats.add(stats);

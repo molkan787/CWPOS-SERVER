@@ -4,6 +4,7 @@ const time = require('../utils/time');
 
 let headStyle;
 let priceStyle;
+let percentStyle;
 
 module.exports = class Sales{
     static initStyle(wb){
@@ -27,7 +28,14 @@ module.exports = class Sales{
         priceStyle = wb.createStyle({
             alignment: {
                 horizontal: 'right',
-            }
+            },
+            numberFormat: '$#,##0.00; - $#,##.00; -- ',
+        });
+        percentStyle = wb.createStyle({
+            alignment: {
+                horizontal: 'right',
+            },
+            numberFormat: '#%; -#%; -',
         });
     }
 
@@ -118,14 +126,13 @@ function _str(val){
     c_ws.cell(c_row, c_col++).string(val);
 }
 function _price(val){
-    c_ws.cell(c_row, c_col++).string(utils.price(val)).style(priceStyle);
+    c_ws.cell(c_row, c_col++).number(val).style(priceStyle);
 }
 function _price_m(val){
-    c_ws.cell(c_row, c_col++).string(utils.price_m(val)).style(priceStyle);
+    c_ws.cell(c_row, c_col++).number(val / 100).style(priceStyle);
 }
 function _percent(val){
-    const str_val = Math.round(val * 100) + '%';
-    c_ws.cell(c_row, c_col++).string(str_val).style(priceStyle);
+    c_ws.cell(c_row, c_col++).number(val).style(percentStyle);
 }
 function _strArr(val){
     let str = '';

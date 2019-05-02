@@ -17,7 +17,7 @@ module.exports = class Reports {
             const stats = await Stats.getTodays();
             const date = time.timestampToDate(day);
 
-            return await summary.daily({...stats, ...data, date});;
+            return await summary.daily({...stats, ...data, date});
         } catch (error) {
             console.log(error);
             return false;
@@ -54,6 +54,15 @@ module.exports = class Reports {
 
     static prepareDailySummaryData(orders){
         const totals = Factory.genPayMethodMap();
+        const sales = {
+            washes: 0,
+            prepaid: 0,
+            extras: 0,
+            others: 0,
+            detailing: 0,
+            certificate: 0,
+            discount: 0,
+        };
         const data = {
             totals,
             prepaids: [],
@@ -64,18 +73,13 @@ module.exports = class Reports {
             newPrepaids: [],
             newPrepaidsTotal: 0,
             detailingTotal: 0,
+            sales,
         };
 
         for(let i = 0; i < orders.length; i++){
             const order = orders[i];
             const paym = order.pay_method;
-            if(paym == 'prepaid'){
-                if(order.transaction) data.prepaids.push(this.getAssociatedCard(order.transaction));
-            }else if(paym == 'loyalty'){
-                if(order.transaction) data.loyalties.push(this.getAssociatedCard(order.transaction));
-            }else{
-                totals[paym] += order.total / 100;
-            }
+            totals[paym] += order.total / 100;
             const prepaidCards = this.getPrepaidCards(order);
             const values = this.extractValues(order);
             data.washesAmount += values.washes;
@@ -84,6 +88,14 @@ module.exports = class Reports {
             data.newPrepaids.push(...prepaidCards.barcodes);
             data.newPrepaidsTotal += prepaidCards.total;
             data.detailingTotal += values.detailing;
+
+            sales.washes += values.washes;
+            sales.detailing += values.detailing;
+            sales.extras += values.extras;
+            sales.others += values.others;
+            sales.prepaid += values.prepaid;
+            sales.certificate += values.certificate;
+            sales.discount += values.discount;
         }
         return data;        
     }
@@ -212,17 +224,34 @@ module.exports = class Reports {
         const products = order.items.products;
         const counts = order.items.counts;
         let washes = 0;
+        let prepaid = 0;
+        let extras = 0;
+        let others = 0;
         let detailing = 0;
+        let certificate = 0;
+        let discount = parseFloat(order.totals.discount);
+
+        const washeCats = [1, 2, 6, 7];
         for(let i = 0; i < products.length; i++){
             const p = products[i];
+            const cat = p.category_id;
             const c = counts[p.id] || 0;
-            if(p.category_id == 1 || p.category_id == 2){
-                washes += p.price * c;
-            }else if(p.category_id == 3){
-                detailing += p.price * c;
+            const price = p.price * c;
+            if(washeCats.includes(cat)){
+                washes += price;
+            }else if(cat == 3){
+                detailing += price;
+            }else if(cat == 4){
+                extras += price;
+            }else if(cat == 5){
+                others += price;
+            }else if(p.id == pids.newPrepaidCardItemId || p.id == pids.reloadPrepaidCardItemId){
+                prepaid += price;
+            }else if(p.id == pids.giftCertificateItemId){
+                certificate += price;
             }
         }
-        return {washes, detailing};
+        return {washes, detailing, prepaid, extras, others, certificate, discount};
     }
 
     static getPrepaidCards(order){
@@ -304,3 +333,9 @@ function wsr_modifier(obj, day){
         obj.date = time.timestampToDate(day);
     }
 }
+
+const pids = {
+    newPrepaidCardItemId: 10001,
+    reloadPrepaidCardItemId: 10002,
+    giftCertificateItemId: 10003,
+};

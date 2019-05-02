@@ -1,6 +1,8 @@
 const path = require('path');
 global.appRoot = path.resolve(__dirname);
 
+const PORT = process.env.PORT || 8081
+
 const config = require('./config');
 const restify = require('restify');
 const errors = require('restify-errors');
@@ -42,6 +44,6 @@ server.use(restify.plugins.bodyParser({ mapParams: false, requestBodyOnGet: true
 
 router(server);
 
-server.listen(443, function() {
+server.listen(PORT, function() {
   console.log('%s listening at %s', server.name, server.url);
 });

@@ -72,6 +72,7 @@ module.exports = class Sales{
                 _strArr(o.reloadPrepaids);
                 _strArr(o.detailing);
                 _strArr(o.otheritems);
+                _strArr(o.certificates);
             }
 
             const filename = utils.rndSlug('.xlsx');
@@ -92,10 +93,10 @@ function addDailyHead(ws){
     const cells = [
         'ID', 'DATE & TIME', 'CW', 'PP', 'RPP', 'DT',
         'TICKET #', 'CASHIER ID', 'ORDER VALUE', 'PAYMENT TYPE', 'WASHES', 'EXTRAS', 'DISCOUNT', 'DISCOUNT REASON',
-        'NEW PREPAID CARD', 'RELOAD OF PREPAID CARD', 'DETAILING WORK', 'OTHER ITEMS',
+        'NEW PREPAID CARD', 'RELOAD OF PREPAID CARD', 'DETAILING WORK', 'OTHER ITEMS', 'GIFT CERTIFICATES',
     ];
     const widths = [
-        1, 3, 1, 1, 1, 1, 2, 2, 2, 3, 4, 4, 2, 3, 4, 4, 4, 4,
+        1, 3, 1, 1, 1, 1, 2, 2, 2, 3, 4, 4, 2, 3, 4, 4, 4, 4, 4,
     ];
 
     for(let i = 0; i < cells.length; i++){

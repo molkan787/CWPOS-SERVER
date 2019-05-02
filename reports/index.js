@@ -188,7 +188,7 @@ module.exports = class Reports {
             row.total = order.total;
             row.payment = this.getPaymentText(order);
             row.discount = order.totals.discount;
-            row.discount_r = '  ---';
+            row.discount_r = (order.other_data.reasons || {}).discount || ' --- ';
 
             result.push(row);
         }
@@ -203,6 +203,9 @@ module.exports = class Reports {
             return 'PREPAID: ' + tx.prepaid.barcode;
         }else if(paym == 'loyalty' && tx){
             return 'LOYALTY: ' + tx.loyalty.barcode;
+        }else if(paym == 'other'){
+            const reason = (order.other_data.reasons || {}).free || '';
+            return Factory.getPaymText('other') + "\nReason: \"" + reason + '"';
         }else{
             return Factory.getPaymText(order.pay_method);
         }
@@ -269,7 +272,7 @@ module.exports = class Reports {
     }
 
     static extractItems(order){
-        const result = {washes: [], extras: [], newPrepaids: [], reloadPrepaids: [], detailing: [], otheritems: []};
+        const result = {washes: [], extras: [], newPrepaids: [], reloadPrepaids: [], detailing: [], otheritems: [], certificates: []};
         const products = order.items.products;
         const counts = order.items.counts;
         for(let i = 0; i < products.length; i++){
@@ -285,9 +288,9 @@ module.exports = class Reports {
 
 function addPrt(obj, p, c){
     const cat = p.category_id;
-    if(cat == 1){
+    if(cat == 1 || cat == 6){
         obj.washes.push(p.name + ' (IN & OUT)' + gct(c));
-    }else if(cat == 2){
+    }else if(cat == 2 || cat == 7){
         obj.washes.push(p.name + ' (IN OR OUT)' + gct(c));
     }else if(cat == 3){
         obj.detailing.push(`${p.name} (${utils.price(p.price)})`);
@@ -295,10 +298,12 @@ function addPrt(obj, p, c){
         obj.extras.push(p.name + gct(c));
     }else if(cat == 5){
         obj.otheritems.push(p.name + gct(c));
-    }else if(p.id == 10001){
+    }else if(p.id == pids.newPrepaidCardItemId){
         obj.newPrepaids.push(`${p.barcode} (${utils.price(p.amount)})`)
-    }else if(p.id == 10002){
+    }else if(p.id == pids.reloadPrepaidCardItemId){
         obj.reloadPrepaids.push(`${p.barcode} (${utils.price(p.amount)})`)
+    }else if(p.id == pids.giftCertificateItemId){
+        obj.certificates.push(`#${p.data.certId}  (${utils.price(p.price)})`)
     }
 }
 

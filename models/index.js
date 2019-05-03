@@ -3,7 +3,7 @@ const Knex = require('knex');
 
 module.exports = function (){
     // Initialize knex.
-    const knex = require('knex')({
+    const knex = Knex({
         client: 'mysql2',
         connection: {
         host : '127.0.0.1',

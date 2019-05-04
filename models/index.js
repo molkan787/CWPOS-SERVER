@@ -1,16 +1,12 @@
 const { Model } = require('objection');
 const Knex = require('knex');
+const Config = require('../config');
 
 module.exports = function (){
     // Initialize knex.
     const knex = Knex({
         client: 'mysql2',
-        connection: {
-        host : '127.0.0.1',
-        user : 'root',
-        password : '123456',
-        database : 'apos'
-        }
+        connection: Config.db,
     });
 
     // Give the knex object to objection.

@@ -1,11 +1,21 @@
 module.exports = class Config{
 
     static get secret(){
-        return 'AGzF8aRlnZ0z7Hx0ZRlnZ0AGzF8az7H';
+        return process.env.secret || 'AGzF8aRlnZ0z7Hx0ZRlnZ0AGzF8az7H';
     }
 
     static get debug(){
-        return true;
+        if(typeof process.env.debugMode == 'undefined') return true;
+        return process.env.debugMode == 'on';
+    }
+
+    static get db(){
+        return {
+            host : process.env.db_host || '127.0.0.1',
+            user : process.env.db_user || 'root',
+            password : process.env.db_pwd || '123456',
+            database : process.env.db_name || 'apos'
+        };
     }
 
 }

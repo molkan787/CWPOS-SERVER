@@ -29,7 +29,7 @@ module.exports = async (req, res, next) => {
         if(payment){
             await addTransaction(payment, _order);
         }
-        res.send({status: 'OK', nextOrderId: _order.id + 1});
+        res.send({status: 'OK', nextOrderId: _order.id + 1, date_added: orderData.date_added});
         next();
     } catch (error) {
         console.log(error);

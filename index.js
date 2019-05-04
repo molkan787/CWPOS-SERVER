@@ -47,3 +47,5 @@ router(server);
 server.listen(PORT, function() {
   console.log('%s listening at %s', server.name, server.url);
 });
+
+console.log(process.env.testBar);

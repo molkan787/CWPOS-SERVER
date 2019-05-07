@@ -59,8 +59,13 @@ module.exports = class LoyaltyCard extends Model{
     }
 
     static async addValue(cardId, amount){
+        const _amount = parseInt(amount);
+        let rawVal = 'balance ';
+        rawVal += (_amount < 0) ? '-' : '+';
+        rawVal += ' ' + Math.abs(_amount).toString();
+
         await this.query().patch({
-            balance: raw('balance + ' + parseInt(amount))
+            balance: raw(rawVal)
         }).where({id: cardId});
     }
 

@@ -2,6 +2,7 @@ const asd = require('./asd');
 const auth = require('./auth');
 const order = require('./order');
 const orders = require('./orders');
+const refundOrder = require('./refundOrder');
 const prepaid = require('./prepaid');
 const getPrepaids = require('./getPrepaids');
 const getLoyalty = require('./getLoyalty');
@@ -50,6 +51,7 @@ module.exports = server => {
     server.post('/client', editClient);
     server.post('/settings', settings.set);
     server.post('/editCardBalance', editCardBalance);
+    server.post('/order/refund', refundOrder);
 
     server.del('/product/:id', delProduct);
     server.del('/user/:id', delUser);

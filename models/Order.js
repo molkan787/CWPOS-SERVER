@@ -13,6 +13,7 @@ module.exports = class Order extends Model{
 
             properties: {
                 id: {type: 'integer'},
+                status: {type: 'integer'},
                 user_id: {type: 'integer'},
                 client_id: {type: 'integer'},
                 total: {type: 'integer'},

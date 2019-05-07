@@ -37,10 +37,14 @@ module.exports = class PrepaidCard extends Model{
     }
 
     static async addBalance(cardId, amount){
-        const _amount = parseInt(amount).toFixed(0);
+        const _amount = parseInt(amount);
+        let rawVal = 'balance ';
+        rawVal += (_amount < 0) ? '-' : '+';
+        rawVal += ' ' + Math.abs(_amount).toString();
+
         try {
             await this.query()
-            .patch({balance: raw('balance + ' + _amount)})
+            .patch({balance: raw(rawVal)})
             .where({id: cardId});
         } catch (error) {
             throw new Error(error);

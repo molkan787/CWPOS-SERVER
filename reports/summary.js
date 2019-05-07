@@ -210,7 +210,7 @@ function addDailySumHead(ws){
         'TOTAL OF ALL VALUE OF DETAIL JOBS'
     ];
     const widths = [
-        3, 1, 1, 1, 1, 2, 2, 2, 2, 3, 2, 3, 2, 2, 2, 3, 3, 5,
+        3, 1, 1, 1, 1, 2, 2, 2, 3, 3, 2, 3, 2, 2, 2, 3, 3, 5,
     ];
 
     for(let i = 0; i < cells.length; i++){

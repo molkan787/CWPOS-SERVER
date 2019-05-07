@@ -6,12 +6,13 @@ const wb = require('../utils/whereBuilder');
 const Order = require('../models/Order');
 const Stats = require('../models/Stats');
 const utils = require('../utils/utils');
+const consts = require('./consts');
 
 module.exports = class Reports {
 
     static async genDailySummary(day){
         try {
-            const cond = wb.dateRange({date_from: day, date_to: day});
+            const cond = wb.dateRange({date_from: day, date_to: day}, null, 'status = 1');
             const orders = await Order.query().eager('transaction.[prepaid, loyalty]').whereRaw(cond);
             const data = this.prepareDailySummaryData(orders);
             const stats = await Stats.getTodays();
@@ -26,7 +27,7 @@ module.exports = class Reports {
 
     static async genWeeklySummary(date_from, date_to){
         try {
-            const cond = wb.dateRange({date_from, date_to});
+            const cond = wb.dateRange({date_from, date_to}, null, 'status = 1');
             const cond2 = wb.dateRange({date_from, date_to}, 'day');
             const orders = await Order.query().whereRaw(cond);
             const stats = await Stats.query().whereRaw(cond2);
@@ -41,7 +42,7 @@ module.exports = class Reports {
 
     static async genDailySales(day){
         try {
-            const cond = wb.dateRange({date_from: day, date_to: day});
+            const cond = wb.dateRange({date_from: day, date_to: day}, null, 'status = 1');
             const orders = await Order.query().eager('[cashier, transaction.[prepaid, loyalty]]').whereRaw(cond);
             const data = this.prepareDailySalesData(orders);
 
@@ -175,13 +176,12 @@ module.exports = class Reports {
         const result = [];
         for(let i = 0; i < orders.length; i++){
             const order = orders[i];
-            const row = this.extractItems(order);
+            const row = {
+                ...this.extractItems(order),
+                ...this.getOrderStats(order),
+            }
             row.id = order.id;
             row.date = time.timestampToDate(order.date_added, true);
-            row.cw = row.washes.length;
-            row.pp = row.newPrepaids.length;
-            row.rpp = row.reloadPrepaids.length;
-            row.dt = row.detailing.length;
 
             row.ticket = order.other_data.ticket;
             row.cashier = order.cashier.username;
@@ -282,6 +282,32 @@ module.exports = class Reports {
             addPrt(result, p, c);
         }
         return result;
+    }
+
+    static getOrderStats(order){
+        const stats = {
+            cw: 0,
+            pp: 0,
+            rpp: 0,
+            dt: 0,
+        }
+
+        const products = order.items.products;
+        const counts = order.items.counts;
+        for(let i = 0; i < products.length; i++){
+            const item = products[i];
+            const c = counts[item.id];
+            if(item.id == consts.newPrepaidCardItemId){
+                stats.pp += c;
+            }else if(item.id == consts.reloadPrepaidCardItemId){
+                stats.rpp += c;
+            }else if(item.category_id == 3){
+                stats.dt += c;
+            }else if(consts.washesCats.includes(item.category_id)){
+                stats.cw += c;
+            }
+        }
+        return stats;
     }
 
 }

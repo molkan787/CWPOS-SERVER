@@ -41,6 +41,25 @@ module.exports = class Stats extends Model{
         });
     }
 
+    static substract(values, date){
+        return new Promise(async (resolve, reject) => {
+            try {
+                const fields = {};
+                for(let name in values){
+                    if(!values.hasOwnProperty(name)) continue;
+                    fields[name] = raw(name + ' - ' + values[name]);
+                }
+                let day = 0;
+                if(date) day = date;
+                else day = (await this.getTodays()).day;
+                await this.query().patch(fields).where({day});
+                resolve(true);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
     static getTodays(){
         return new Promise(async (resolve, reject) => {
             const today = time.today();

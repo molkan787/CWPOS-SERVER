@@ -36,7 +36,7 @@ class TimeHelper{
        
         let convdataTime = day+' '+month+' '+year;
         if(includeTime)
-            convdataTime += ' '+hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+            convdataTime += ' '+ hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
 
         return convdataTime;
     }

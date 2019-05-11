@@ -8,7 +8,6 @@ const getPrepaids = require('./getPrepaids');
 const getLoyalty = require('./getLoyalty');
 const loyalty = require('./loyalty');
 const capture = require('./capture');
-// const clientHistory = require('./clientHistory');
 const clcref = require('./clcref');
 const client = require('./client');
 const editClient = require('./editClient');
@@ -24,6 +23,8 @@ const download = require('./download');
 const setReceiptFlag = require('./setReceiptFlag');
 const settings = require('./settings');
 const editCardBalance = require('./editCardBalance');
+const importData = require('./import');
+const exportData = require('./export');
 
 module.exports = server => {
     server.get('/asd', asd);
@@ -52,6 +53,9 @@ module.exports = server => {
     server.post('/settings', settings.set);
     server.post('/editCardBalance', editCardBalance);
     server.post('/order/refund', refundOrder);
+
+    server.post('/import/:dest', importData);
+    server.post('/export/:dataName', exportData);
 
     server.del('/product/:id', delProduct);
     server.del('/user/:id', delUser);

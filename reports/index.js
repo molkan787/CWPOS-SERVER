@@ -320,7 +320,7 @@ function addPrt(obj, p, c){
         obj.washes.push(p.name + ' (IN OR OUT)' + gct(c));
     }else if(cat == 3){
         obj.detailing.push(`${p.name} (${utils.price(p.price)})`);
-    }else if(cat == 4){
+    }else if(cat == 4 || cat == 8){
         obj.extras.push(p.name + gct(c));
     }else if(cat == 5){
         obj.otheritems.push(p.name + gct(c));

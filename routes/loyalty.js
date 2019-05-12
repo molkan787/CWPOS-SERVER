@@ -11,6 +11,9 @@ module.exports = async (req, res, next) => {
             case 'add':
                 res.send(await addCard(req.body));
                 break;
+            case 'del':
+                res.send(await deleteCard(req.body));
+                break;
         
             default:
                 return next(new errors.NotFoundError('Unknow request path'));
@@ -45,4 +48,10 @@ async function addCard(data){
         throw new Error('Unknow error, Probably received data was invalid' + error);
     }
 
+}
+
+async function deleteCard(payload){
+    const id = parseInt(payload.id);
+    await LoyaltyCard.query().deleteById(id);
+    return resMaker.success();
 }

@@ -8,6 +8,18 @@ module.exports = class Action{
         return await ActionModel.add(group, type, ref, slot, data);
     }
 
+    static async getBulkByRef(ref){
+        let filters;
+
+        if(typeof ref == 'number'){
+            filters = {ref1: ref};
+        }else if(typeof ref == 'object'){
+            filters = ref;
+        }
+
+        return await ActionModel.query().where(filters);
+    }
+
     static async reverse(action){
         if(action instanceof Array){
             for(let i = 0; i < action.length; i++){

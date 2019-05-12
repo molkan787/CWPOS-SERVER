@@ -16,7 +16,10 @@ module.exports = async (req, res, next) => {
             case 'reload':
                 res.send(await reloadCard(req.body));
                 break;
-        
+            case 'del':
+                res.send(await deleteCard(req.body));
+                break;
+
             default:
                 return next(new errors.NotFoundError('Unknow request path'));
         }
@@ -62,12 +65,18 @@ async function addCard(data){
             date_added: time.now(),
             date_modified: time.now(),
         });
-        const actionId = await addAction(AC.TYPE_PREPAID_ACTIVATION, card.id);
+        const actionId = await addAction(AC.TYPE_PREPAID_ACTIVATION, card.id, balance);
         return resMaker.success({cardId: card.id, actionId});
     } catch (error) {
         throw new Error('Unknow error, Probably received data was invalid ' + error);
     }
 
+}
+
+async function deleteCard(payload){
+    const id = parseInt(payload.id);
+    await PrepaidCard.query().deleteById(id);
+    return resMaker.success();
 }
 
 async function addAction(type, cardId, value){

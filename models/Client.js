@@ -68,12 +68,12 @@ module.exports = class Client extends Model{
     static async getClientHostory(clientId){
         try {
             const result = [];
-            const orders = await Order.query().where({client_id: clientId}).orderBy('id', 'DESC').limit(6);
+            const orders = await Order.query().where({client_id: clientId}).orderBy('id', 'DESC').limit(10);
             if(orders){
                 for(let i = 0; i < orders.length; i++){
                     const _order = orders[i];
                     result.push({
-                        date: time.timestampToDate(_order.date_added),
+                        date: time.timestampToDate(_order.date_added, true),
                         amount: _order.total / 100,
                         receipt: _order.receipt,
                     });

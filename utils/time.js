@@ -29,14 +29,17 @@ class TimeHelper{
         const date = new Date(unixtimestamp*1000);
         const year = date.getFullYear();
         const month = months_arr[date.getMonth()];
-        const day = date.getDate();
-        const hours = date.getHours();
+        const day = "0" + date.getDate();
+        const hours = "0" + date.getHours();
         const minutes = "0" + date.getMinutes();
         const seconds = "0" + date.getSeconds();
        
-        let convdataTime = day+' '+month+' '+year;
+        let convdataTime = day.substr(-2) + ' ' + month + ' ' + year;
         if(includeTime)
-            convdataTime += ' '+ hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+            convdataTime += ' - ' + hours.substr(-2) + ':' + minutes.substr(-2);
+            if(includeTime == 2){
+                convdataTime += ':' + seconds.substr(-2);
+            }
 
         return convdataTime;
     }

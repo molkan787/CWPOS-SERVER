@@ -29,7 +29,7 @@ module.exports = async (req, res, next) => {
 };
 
 async function getClient(phone){
-    const clientData = await Client.query().findOne({phone}).eager('loyalty');
+    const clientData = await Client.query().findOne({phone}).eager('[loyalty, prepaid]');
     if(clientData){
         clientData.history = await Client.getClientHostory(clientData.id);
     }
@@ -37,5 +37,9 @@ async function getClient(phone){
 }
 
 async function getLoyaltyCard(barcode){
-    return await LoyaltyCard.query().findOne({barcode}).eager('client');
+    const card = await LoyaltyCard.query().findOne({barcode}).eager('[client.prepaid]');
+    if(card && card.client && card.client.id){
+        card.client.history = await Client.getClientHostory(card.client.id);
+    }
+    return card;
 }

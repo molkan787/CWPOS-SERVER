@@ -2,6 +2,7 @@ const errors = require('restify-errors');
 const resMaker = require('../utils/response');
 const Client = require('../models/Client');
 const LoyaltyCard = require('../models/LoyaltyCard');
+const PrepaidCard = require('../models/PrepaidCard');
 
 module.exports = async (req, res, next) => {
     try {
@@ -18,7 +19,12 @@ module.exports = async (req, res, next) => {
             if(loyaltyCard){
                 res.send(resMaker.success({loyaltyCard}));
             }else{
-                res.send(resMaker.fail('NOT_FOUND'));
+                const data = await getClientOrPrepaidCard(ref);
+                if(data){
+                    res.send(resMaker.success(data));
+                }else{
+                    res.send(resMaker.fail('NOT_FOUND'));
+                }
             }
         }
 
@@ -28,12 +34,28 @@ module.exports = async (req, res, next) => {
     }
 };
 
-async function getClient(phone){
-    const clientData = await Client.query().findOne({phone}).eager('[loyalty, prepaid]');
+async function getClient(ref){
+    const filter = {};
+    if(typeof ref == 'number') filter.id = ref;
+    else filter.phone = ref;
+
+    const clientData = await Client.query().findOne(filter).eager('[loyalty, prepaid]');
     if(clientData){
         clientData.history = await Client.getClientHostory(clientData.id);
     }
     return clientData;
+}
+
+async function getClientOrPrepaidCard(barcode){
+    let clientData;
+    const card  = await PrepaidCard.query().findOne({barcode});
+    if(card && card.client_id){
+        clientData = await getClient(card.client_id);
+    }
+
+    if(clientData) return {clientData};
+    else if(card) return {prepaidCard: card};
+    else return false;
 }
 
 async function getLoyaltyCard(barcode){

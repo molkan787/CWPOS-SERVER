@@ -9,9 +9,11 @@ const Transaction = require('../models/Transaction');
 const time = require('../utils/time');
 const Action = require('../Actions/Action');
 const AC = require('../Actions/ActionConsts');
+const consts = require('../reports/consts');
+const utils = require('../utils/utils');
 
 module.exports = async (req, res, next) => {
-    const {orderData, stats, payment, invoiceData, loyaltyCardId, actions} = req.body;
+    const {orderData, stats, payment, invoiceData, loyaltyCardId, actions, cards, taxes} = req.body;
     orderData.date_added = time.now();
 
     try {
@@ -29,14 +31,16 @@ module.exports = async (req, res, next) => {
         }
         
         if(loyaltyCardId > 0){
-            if(!payment || (payment.type != 'prepaid' && payment.type != 'loyalty')) {
-                // Adding 10% of the orde value to loyalty points
-                const points = orderData.total / 10;
+            if(!payment || (payment.type != 'loyalty')) {
+                // Adding 10% of the order value to loyalty points
+                const exclude = getAmountToExclude(orderData);
+                let points = utils.removeTaxes((orderData.total - exclude) / 10, taxes);
+                if(points < 0) points = 0;
                 LoyaltyCard.addValue(loyaltyCardId, points);
                 Action.add(AC.GROUP_ORDER, AC.TYPE_LOYALTY_POINT_ADD, {
                     ref1: _order.id,
                     ref2: loyaltyCardId,
-                }, points);
+                }, Math.round(points));
             }
         }
 
@@ -44,10 +48,11 @@ module.exports = async (req, res, next) => {
             patchActions(_order.id, actions);
         }
 
-        res.send({status: 'OK', nextOrderId: _order.id + 1, date_added: orderData.date_added});
+        const balances = await getBalances(cards);
+
+        res.send({status: 'OK', balances, nextOrderId: _order.id + 1, date_added: orderData.date_added});
         next();
     } catch (error) {
-        console.log(error);
         return next(new errors.InternalError('Error:004'));
     }
 };
@@ -80,9 +85,35 @@ async function addTransaction(payment, order){
     await Action.add(AC.GROUP_ORDER, axType, {
         ref1: order.id,
         ref2: cardId,
-    }, order.total);
+    }, parseInt(order.total));
 }
 
 async function patchActions(orderId, ids){
     await Action.patch({ref1: orderId}, ids);
 }
+
+async function getBalances(cardsIds){
+    const prepaid = await PrepaidCard.query().findById(cardsIds.prepaid);
+    const loyalty = await LoyaltyCard.query().findById(cardsIds.loyalty);
+
+    let balances = {};
+    if(prepaid) balances.prepaid = prepaid.balance;
+    if(loyalty) balances.loyalty = loyalty.balance;
+
+    return balances;
+}
+
+function getAmountToExclude(order){
+    let amt = order.totals.tips || 0;
+
+    const items = order.items.products;
+    for(let item of items){
+        if(item.id == consts.newPrepaidCardItemId || item.id == consts.reloadPrepaidCardItemId){
+            amt += item.price;
+        }
+    }
+
+    return Math.round(amt * 100);
+
+}
+

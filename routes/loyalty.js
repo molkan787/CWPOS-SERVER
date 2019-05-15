@@ -14,7 +14,10 @@ module.exports = async (req, res, next) => {
             case 'del':
                 res.send(await deleteCard(req.body));
                 break;
-        
+            case 'setClientId':
+                res.send(await setClientId(req.body));
+                break;
+
             default:
                 return next(new errors.NotFoundError('Unknow request path'));
         }
@@ -53,5 +56,11 @@ async function addCard(data){
 async function deleteCard(payload){
     const id = parseInt(payload.id);
     await LoyaltyCard.query().deleteById(id);
+    return resMaker.success();
+}
+
+async function setClientId(payload){
+    const {id, client_id} = payload;
+    await LoyaltyCard.query().patch({client_id}).findById(id);
     return resMaker.success();
 }

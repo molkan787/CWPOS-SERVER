@@ -11,6 +11,11 @@ module.exports = class Utils{
         return this.price(value / 100);
     }
 
+    static removeTaxes(value, taxes){
+        const totalTaxRate = taxes.gst + taxes.qst;
+        return value / (totalTaxRate + 1);
+    }
+
     static rndSlug(suffix){
         return time.now() + '-' + this.rndStr(8) + (suffix || '');
     }

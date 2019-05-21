@@ -49,10 +49,16 @@ module.exports = class Client extends Model{
     }
 
     static async getClientId(clientData){
+        return (await this.getClient(clientData)).id;
+    }
+
+    static async getClient(clientData){
         const {phone, first_name, last_name, email, is_company} = clientData;
-        let client = await Client.query().findOne({phone});
+        let client = this.isNoTell(phone) ? null : await Client.query().findOne({phone});
         if(client){
-            return client.id;
+            await Client.query().patch({first_name}).findById(client.id);
+            client.first_name = first_name;
+            return client;
         }
         client = await Client.query().insert({
                 phone,
@@ -62,7 +68,7 @@ module.exports = class Client extends Model{
                 is_company,
                 date_added: time.now()
         });
-        return client.id;
+        return client;
     }
 
     static async getClientHostory(clientId){
@@ -98,6 +104,20 @@ module.exports = class Client extends Model{
             });
         }
         return company.id;
+    }
+
+
+    // ------- UTILS-------
+    static isNoTell(phone){
+        return phone == '5555555555' || phone == '0000000000';
+    }
+
+    static compare(c1, c2){
+        if(c1.phone != c2.phone) {}
+        else if(c1.first_name.toLowerCase() != c2.first_name.toLowerCase()) {}
+        else return true;
+
+        return false;
     }
 
 }

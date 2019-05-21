@@ -1,6 +1,8 @@
 const {Model, raw} = require('objection');
 const time = require('../utils/time');
 
+const tz_offset = 3600 * 4;
+
 module.exports = class Stats extends Model{
 
     static get tableName(){
@@ -60,9 +62,9 @@ module.exports = class Stats extends Model{
         });
     }
 
-    static getTodays(){
+    static getTodays(dateKey){
         return new Promise(async (resolve, reject) => {
-            const today = time.today();
+            const today = dateKey || time.getDateKey();
             try {
                 let stats = await this.query().findOne({day: today});
                 if(stats){

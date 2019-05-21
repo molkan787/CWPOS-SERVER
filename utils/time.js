@@ -1,9 +1,25 @@
 const daySeconds = 3600 * 24;
+const tz_offset = 3600 * 4;
 
 class TimeHelper{
 
     get daySeconds(){
         return daySeconds;
+    }
+
+    get tzOffset(){
+        return tz_offset;
+    }
+
+    getDateKey(datetime){
+        const date = datetime ? new Date(datetime * 1000) : new Date();
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+       
+        let convdataTime = year * 10000 + month * 100 + day;
+
+        return convdataTime;
     }
 
     today(){
@@ -15,7 +31,7 @@ class TimeHelper{
     }
 
     roundToDay(time){
-        return time - (time % daySeconds)
+        return time - (time % daySeconds) + tz_offset;
     }
 
     todayDate(){

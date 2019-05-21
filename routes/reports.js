@@ -2,6 +2,7 @@ const errors = require('restify-errors');
 const reports = require('../reports/index');
 const security = require('../security');
 const resMaker = require('../utils/response');
+const time = require('../utils/time');
 
 module.exports = async (req, res, next) => {
     try {
@@ -33,12 +34,13 @@ async function generateReport(params){
             filename = await reports.genWeeklySummary(params.date_from, params.date_to);
             break;
         default:
+            throw new Error('Unknow Reports type.');
             break;
     }
 
     if(filename){
         return filename;
     }else{
-        throw new Error('Unknow Reports type.');
+        throw new Error('Unknow error occured when generating reports file.');
     }
 }

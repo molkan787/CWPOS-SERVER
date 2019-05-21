@@ -15,7 +15,7 @@ module.exports = class Reports {
             const cond = wb.dateRange({date_from: day, date_to: day}, null, 'status = 1');
             const orders = await Order.query().eager('transaction.[prepaid, loyalty]').whereRaw(cond);
             const data = this.prepareDailySummaryData(orders);
-            const stats = await Stats.getTodays();
+            const stats = await Stats.getTodays(time.getDateKey(day));
             const date = time.timestampToDate(day);
 
             return await summary.daily({...stats, ...data, date});
@@ -27,8 +27,8 @@ module.exports = class Reports {
 
     static async genWeeklySummary(date_from, date_to){
         try {
-            const cond = wb.dateRange({date_from, date_to}, null, 'status = 1');
-            const cond2 = wb.dateRange({date_from, date_to}, 'day');
+            const cond = wb.dateRange({date_from, date_to}, 'date_added', 'status = 1');
+            const cond2 = wb.dateRange({date_from, date_to}, 'day', '', true);
             const orders = await Order.query().whereRaw(cond);
             const stats = await Stats.query().whereRaw(cond2);
 
@@ -106,7 +106,7 @@ module.exports = class Reports {
 
         for(let i = 0; i < orders.length; i++){
             const order = orders[i];
-            const dayTime = time.roundToDay(order.date_added);
+            const dayTime = time.getDateKey(order.date_added);
             const day = map.days[dayTime];
 
             switch (order.pay_method) {

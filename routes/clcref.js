@@ -35,10 +35,11 @@ module.exports = async (req, res, next) => {
 };
 
 async function getClient(ref){
+    if(typeof ref != 'number' && Client.isNoTell(ref)) return null;
     const filter = {};
     if(typeof ref == 'number') filter.id = ref;
     else filter.phone = ref;
-
+    
     const clientData = await Client.query().findOne(filter).eager('[loyalty, prepaid]');
     if(clientData){
         clientData.history = await Client.getClientHostory(clientData.id);

@@ -23,6 +23,7 @@ const download = require('./download');
 const setReceiptFlag = require('./setReceiptFlag');
 const settings = require('./settings');
 const editCardBalance = require('./editCardBalance');
+const editCardBarcode = require('./editCardBarcode')
 const importData = require('./import');
 const exportData = require('./export');
 
@@ -52,6 +53,7 @@ module.exports = server => {
     server.post('/client', editClient);
     server.post('/settings', settings.set);
     server.post('/editCardBalance', editCardBalance);
+    server.post('/editCardBarcode', editCardBarcode);
     server.post('/order/refund', refundOrder);
 
     server.post('/import/:dest', importData);

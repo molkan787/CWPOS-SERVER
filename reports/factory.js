@@ -37,7 +37,7 @@ module.exports = class Factory{
             const dayObj = template ? {...template} : {};
             if(_options.modifier) _options.modifier(dayObj, day);
             map.list.push(dayObj);
-            map.days[day] = dayObj;
+            map.days[time.getDateKey(day)] = dayObj;
         }
 
         if(_options.addSum){

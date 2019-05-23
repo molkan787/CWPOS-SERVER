@@ -4,6 +4,7 @@ const Product = require('../models/Product');
 const Stats = require('../models/Stats');
 const Client = require('../models/Client');
 const Settings = require('../models/Settings');
+const Order = require('../models/Order');
 
 module.exports = async (req, res, next) => {
     try {
@@ -12,12 +13,14 @@ module.exports = async (req, res, next) => {
         const stats = await Stats.getTodays();
         const companies = await Client.query().where({is_company: 1});
         const settings = await Settings.getValues();
+        const orderPtr = await Order.getPtr();
         res.send({
             categories,
             products: products,
             stats,
             companies,
             settings,
+            orderPtr,
         });
         next();
     } catch (error) {

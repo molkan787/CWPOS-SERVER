@@ -56,5 +56,15 @@ module.exports = class Order extends Model{
         };
     }
 
+    static async getPtr(){
+        const knex = this.knex();
+        return (await knex.raw(`
+            SELECT \`AUTO_INCREMENT\`
+            FROM  INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_SCHEMA = 'apos'
+            AND   TABLE_NAME   = 'orders';
+        `))[0][0].AUTO_INCREMENT;
+    }
+
 
 }

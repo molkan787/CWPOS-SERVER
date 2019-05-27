@@ -30,12 +30,14 @@ module.exports = async (req, res, next) => {
             await addTransaction(payment, _order);
         }
         
+        const exclude = getAmountToExclude(orderData);
+        let points = utils.removeTaxes((orderData.total - exclude) / 10, taxes);
+        points = Math.round(points);
+        if (points < 0) points = 0;
+
         if(loyaltyCardId > 0){
             if(!payment || (payment.type != 'loyalty')) {
                 // Adding 10% of the order value to loyalty points
-                const exclude = getAmountToExclude(orderData);
-                let points = utils.removeTaxes((orderData.total - exclude) / 10, taxes);
-                if(points < 0) points = 0;
                 LoyaltyCard.addValue(loyaltyCardId, points);
                 Action.add(AC.GROUP_ORDER, AC.TYPE_LOYALTY_POINT_ADD, {
                     ref1: _order.id,
@@ -50,7 +52,13 @@ module.exports = async (req, res, next) => {
 
         const balances = await getBalances(cards);
 
-        res.send({status: 'OK', balances, nextOrderId: _order.id + 1, date_added: orderData.date_added});
+        res.send({
+            status: 'OK',
+            balances,
+            nextOrderId: _order.id + 1,
+            date_added: orderData.date_added,
+            loyaltyPoints: points,
+        });
         next();
     } catch (error) {
         return next(new errors.InternalError('Error:004'));

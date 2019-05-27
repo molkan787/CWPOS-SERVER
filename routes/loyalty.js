@@ -3,6 +3,8 @@ const LoyaltyCard = require('../models/LoyaltyCard');
 const Client = require('../models/Client');
 const time = require('../utils/time');
 const resMaker = require('../utils/response');
+const Action = require('../Actions/Action');
+const AC = require('../Actions/ActionConsts');
 
 module.exports = async (req, res, next) => {
     const action = req.params.action;
@@ -17,13 +19,17 @@ module.exports = async (req, res, next) => {
             case 'setClientId':
                 res.send(await setClientId(req.body));
                 break;
+            case 'addPoints':
+                res.send(await addPoints(req.body));
+                break;
 
             default:
                 return next(new errors.NotFoundError('Unknow request path'));
         }
         next();
     } catch (error) {
-        return next(new errors.InternalError('ERROR:006' + error));
+        console.log(error)
+        return next(new errors.InternalError('ERROR:006'));
     }
 };
 
@@ -63,4 +69,14 @@ async function setClientId(payload){
     const {id, client_id} = payload;
     await LoyaltyCard.query().patch({client_id}).findById(id);
     return resMaker.success();
+}
+
+async function addPoints(payload){
+    const {cardId, amount, user} = payload;
+    await LoyaltyCard.addValue(cardId, amount);
+    await Action.add(AC.GROUP_ORDER, AC.TYPE_LOYALTY_POINT_ADD_AFTER_SALE, {
+        ref1: 0,
+        ref2: cardId,
+    }, amount, {user});
+    return resMaker.success(); 
 }

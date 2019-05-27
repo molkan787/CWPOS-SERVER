@@ -7,6 +7,8 @@ const Order = require('../models/Order');
 const Stats = require('../models/Stats');
 const utils = require('../utils/utils');
 const consts = require('./consts');
+const Action = require('../Actions/Action');
+const AC = require('../Actions/ActionConsts');
 
 module.exports = class Reports {
 
@@ -53,6 +55,22 @@ module.exports = class Reports {
         }
     }
 
+    static async genLoyaltyPointsAdding(date_from, date_to) {
+        try {
+            const cond = wb.dateRange({ date_from, date_to }, 'date_added');
+            const actions = await Action.getBulkByTypeDateRange(
+                AC.TYPE_LOYALTY_POINT_ADD_AFTER_SALE,
+                date_from, date_to,
+                'loyalty'
+            );
+
+            return await sales.loyaltyPoints(actions);
+        } catch (error) {
+            console.log(error);
+            return false;
+        }
+    }
+
     static prepareDailySummaryData(orders){
         const totals = Factory.genPayMethodMap();
         const sales = {
@@ -63,6 +81,7 @@ module.exports = class Reports {
             detailing: 0,
             certificate: 0,
             discount: 0,
+            tips: 0,
         };
         const data = {
             totals,
@@ -70,6 +89,7 @@ module.exports = class Reports {
             loyalties: [],
             washesAmount: 0,
             discount: 0,
+            tips: 0,
             extra: 0,
             newPrepaids: [],
             newPrepaidsTotal: 0,
@@ -85,6 +105,7 @@ module.exports = class Reports {
             const values = this.extractValues(order);
             data.washesAmount += values.washes;
             data.discount += order.totals.discount || 0;
+            data.tips += values.tips || 0;
             data.extra += order.totals.extraCharge || 0;
             data.newPrepaids.push(...prepaidCards.barcodes);
             data.newPrepaidsTotal += prepaidCards.total;
@@ -97,6 +118,7 @@ module.exports = class Reports {
             sales.prepaid += values.prepaid;
             sales.certificate += values.certificate;
             sales.discount += values.discount;
+            sales.tips += values.tips;
         }
         return data;        
     }
@@ -134,6 +156,7 @@ module.exports = class Reports {
             day.detailingTotal += values.detailing;
             day.discount += order.totals.discount;
             day.extra += order.totals.extraCharge;
+            day.tips += order.totals.tips;
             day.newPrepaid += this.getPrepaidCards(order).total;
         }
 
@@ -194,6 +217,7 @@ module.exports = class Reports {
         }
         return result;
     }
+
     // .................Helpers.................
 
     static getPaymentText(order){
@@ -232,7 +256,8 @@ module.exports = class Reports {
         let others = 0;
         let detailing = 0;
         let certificate = 0;
-        let discount = parseFloat(order.totals.discount);
+        const discount = parseFloat(order.totals.discount);
+        const tips = parseFloat(order.totals.tips);
 
         const washeCats = [1, 2, 6, 7];
         for(let i = 0; i < products.length; i++){
@@ -254,7 +279,7 @@ module.exports = class Reports {
                 certificate += price;
             }
         }
-        return {washes, detailing, prepaid, extras, others, certificate, discount};
+        return { washes, detailing, prepaid, extras, others, certificate, discount, tips};
     }
 
     static getPrepaidCards(order){
@@ -353,6 +378,7 @@ const wsr_template = {
     allWashesValue: 0,
     discount: 0,
     extra: 0,
+    tips: 0,
     newPrepaid: 0,
     detailingTotal: 0,
 };

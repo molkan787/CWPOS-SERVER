@@ -116,6 +116,7 @@ module.exports = class Summary{
             _price(data.washesAmount);
             _price(data.discount);
             _price(data.extra);
+            _price(data.tips);
 
             const newPrepaids = data.newPrepaids;
             const col4 = c_col++;
@@ -185,6 +186,7 @@ module.exports = class Summary{
                 _price(day.allWashesValue);
                 _price(day.discount);
                 _price(day.extra);
+                _price(day.tips);
                 _price(day.newPrepaid);
                 _price(day.detailingTotal);
             }
@@ -206,11 +208,11 @@ function addDailySumHead(ws){
     const cells = [
         'DATE', 'CW', 'PP', 'RPP', 'DT',
         'CASH', 'CREDIT', 'INVOICE / ARI', 'VALUE OF FREE WASHES', 'PREPAID',
-        'LOYALTY', 'ALL CAR WASHES', 'DISCOUNT', 'EXTRAS', 'PP CARD NUMBER', 'TOTAL VALUE OF PREPAID CARDS',
+        'LOYALTY', 'ALL CAR WASHES', 'DISCOUNT', 'EXTRAS', 'TIPS', 'PP CARD NUMBER', 'TOTAL VALUE OF PREPAID CARDS',
         'TOTAL OF ALL VALUE OF DETAIL JOBS'
     ];
     const widths = [
-        3, 1, 1, 1, 1, 2, 2, 2, 3, 3, 2, 3, 2, 2, 2, 3, 3, 5,
+        3, 1, 1, 1, 1, 2, 2, 2, 3, 3, 2, 3, 2, 2, 2, 2, 3, 3, 5,
     ];
 
     for(let i = 0; i < cells.length; i++){

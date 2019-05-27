@@ -87,6 +87,36 @@ module.exports = class Sales{
         });
     }
 
+    static loyaltyPoints(actions){
+        return new Promise((resolve, reject) => {
+            const wb = new xl.Workbook();
+            this.initStyle(wb);
+            const ws = wb.addWorksheet('Loyalty point (Manually)');
+            addLoyaltyPointsHead(ws);
+
+            let y = 2;
+            for(let ax of actions){
+                if (!ax.loyalty) continue;
+                ws.cell(y, 1).string(time.timestampToDate(ax.date_added, true));
+                ws.cell(y, 2).string(ax.loyalty.barcode);
+                ws.cell(y, 3).number(ax.s1 / 100).style(priceStyle);
+                ws.cell(y, 4).string(ax.data.user.username);
+                y++;
+            }
+
+            const filename = utils.rndSlug('.xlsx');
+            wb.write('files/' + filename, err => {
+                if (err) {
+                    reject(err);
+                } else {
+                    console.log(`File "${filename}" was written!`);
+                    resolve(filename);
+                }
+            });
+
+        });
+    }
+
 }
 
 function addDailyHead(ws){
@@ -105,6 +135,21 @@ function addDailyHead(ws){
         ws.column(i + 1).setWidth(widths[i] * 6);
     }
     ws.row(1).setHeight(30);
+}
+
+function addLoyaltyPointsHead(ws){
+    const cells = [
+        'DATE & TIME', 'Card No.', 'Amount', 'Cashier'
+    ];
+    const widths = [
+        3, 5, 2, 3,
+    ];
+
+    for (let i = 0; i < cells.length; i++) {
+        const text = cells[i];
+        ws.cell(1, i + 1).string(text).style(headStyle);
+        ws.column(i + 1).setWidth(widths[i] * 6);
+    }
 }
 
 // -----------------------------------

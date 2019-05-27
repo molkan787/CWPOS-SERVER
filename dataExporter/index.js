@@ -176,13 +176,15 @@ function getXTypeText(xtype){
         case AC.TYPE_PREPAID_DEBIT:
             return 'Redeem';
         case AC.TYPE_PREPAID_BALANCE_ADJUST:
-            return 'Balance Adjustement';
+            return 'Balance Adjustment';
         case AC.TYPE_LOYALTY_BALANCE_ADJUST:
-            return 'Balance Adjustement';
+            return 'Balance Adjustment';
         case AC.TYPE_LOYALTY_DEBIT:
             return 'Redeem';
         case AC.TYPE_LOYALTY_POINT_ADD:
             return 'Point added';
+        case AC.TYPE_LOYALTY_POINT_ADD_AFTER_SALE:
+            return 'Point added (Manually)';
         default:
             return '';
     }

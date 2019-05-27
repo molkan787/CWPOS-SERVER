@@ -33,9 +33,11 @@ async function generateReport(params){
         case 'weekly-summary':
             filename = await reports.genWeeklySummary(params.date_from, params.date_to);
             break;
+        case 'loyalty-points':
+            filename = await reports.genLoyaltyPointsAdding(params.date_from, params.date_to);
+            break;
         default:
             throw new Error('Unknow Reports type.');
-            break;
     }
 
     if(filename){

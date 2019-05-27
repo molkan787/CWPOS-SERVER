@@ -30,6 +30,19 @@ module.exports = class Action extends Model{
         }
     }
 
+    static get relationMappings() {
+        return {
+            loyalty: {
+                relation: Model.BelongsToOneRelation,
+                modelClass: __dirname + '/LoyaltyCard',
+                join: {
+                    from: 'actions.ref2',
+                    to: 'loyalty_cards.id'
+                }
+            },
+        };
+    }
+
     static async add(group, type, ref, slot, data, associated){
         const a = {
             date_added: time.now(),

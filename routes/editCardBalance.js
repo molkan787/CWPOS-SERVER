@@ -8,7 +8,7 @@ const AC = require('../Actions/ActionConsts');
 module.exports = async (req, res, next) => {
     try {
         const {type, id, balance} = req.body;
-        await setCardBalance(type, id, balance);
+        await setCardBalance(type, id, balance, req.userId);
         res.send(resMaker.success());
         next();
     } catch (error) {
@@ -16,7 +16,7 @@ module.exports = async (req, res, next) => {
     }
 };
 
-async function setCardBalance(type, id, balance){
+async function setCardBalance(type, id, balance, userId){
     const xtype = type == 'prepaid' ? AC.TYPE_PREPAID_BALANCE_ADJUST : AC.TYPE_LOYALTY_BALANCE_ADJUST;
     const Model = type == 'prepaid' ? PrepaidCard : LoyaltyCard;
     const card = await Model.query().findById(id);
@@ -25,6 +25,7 @@ async function setCardBalance(type, id, balance){
     await Action.add(AC.GROUP_ADMIN, xtype, {
         ref1: 0,
         ref2: id,
+        ref3: userId,
     }, {
         s1: balance,
         s2: card.balance,

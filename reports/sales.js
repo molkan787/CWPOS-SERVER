@@ -4,6 +4,7 @@ const time = require('../utils/time');
 
 let headStyle;
 let priceStyle;
+let priceStyleWithPositiveSign;
 let percentStyle;
 
 module.exports = class Sales{
@@ -31,6 +32,12 @@ module.exports = class Sales{
             },
             numberFormat: '$#,##0.00; - $#,##.00; -- ',
         });
+        priceStyleWithPositiveSign = wb.createStyle({
+            alignment: {
+                horizontal: 'right',
+            },
+            numberFormat: '+ $#,##0.00; - $#,##.00; -- ',
+        });
         percentStyle = wb.createStyle({
             alignment: {
                 horizontal: 'right',
@@ -39,11 +46,11 @@ module.exports = class Sales{
         });
     }
 
-    static daily(orders){
+    static daily(orders, _wb){
         return new Promise((resolve, reject) => {
-            const wb = new xl.Workbook();
+            const wb = _wb || new xl.Workbook();
             this.initStyle(wb);
-            const ws = wb.addWorksheet('Reports');
+            const ws = wb.addWorksheet('Sales');
             addDailyHead(ws);
             setWS(ws);
             setRow(2);
@@ -73,6 +80,10 @@ module.exports = class Sales{
                 _strArr(o.detailing);
                 _strArr(o.otheritems);
                 _strArr(o.certificates);
+            }
+
+            if(_wb){
+                return;
             }
 
             const filename = utils.rndSlug('.xlsx');
@@ -117,6 +128,47 @@ module.exports = class Sales{
         });
     }
 
+    static cardsBalanceAdjustment(actions, card_type){
+        return new Promise((resolve, reject) => {
+            if (card_type != 'prepaid' && card_type != 'loyalty'){
+                reject(new Error('Invalid card type'));
+                return;
+            }
+            const cardName = card_type == 'prepaid' ? 'Prepaid' : 'Loyalty';
+            const wb = new xl.Workbook();
+            this.initStyle(wb);
+            const ws = wb.addWorksheet(`${cardName} balances adjustment`);
+            addBalancesAdjHead(ws);
+
+            let y = 2;
+            for (let i = actions.length - 1; i >= 0; i--) {
+                let ax = actions[i];
+                if (!ax.loyalty && !ax.prepaid) continue;
+                ws.cell(y, 1).string(time.timestampToDate(ax.date_added, true));
+                ws.cell(y, 2).string(ax[card_type].barcode);
+                ws.cell(y, 3).number(ax.s2 / 100).style(priceStyle);
+                ws.cell(y, 4).number(ax.s1 / 100).style(priceStyle);
+                ws.cell(y, 5).number((ax.s1 - ax.s2) / 100).style(priceStyleWithPositiveSign);
+                if(ax.user)
+                    ws.cell(y, 6).string(ax.user.username);
+                else
+                    ws.cell(y, 6).string('---');
+                y++;
+            }
+
+            const filename = utils.rndSlug('.xlsx');
+            wb.write('files/' + filename, err => {
+                if (err) {
+                    reject(err);
+                } else {
+                    console.log(`File "${filename}" was written!`);
+                    resolve(filename);
+                }
+            });
+
+        });
+    }
+
 }
 
 function addDailyHead(ws){
@@ -143,6 +195,21 @@ function addLoyaltyPointsHead(ws){
     ];
     const widths = [
         3, 5, 2, 3,
+    ];
+
+    for (let i = 0; i < cells.length; i++) {
+        const text = cells[i];
+        ws.cell(1, i + 1).string(text).style(headStyle);
+        ws.column(i + 1).setWidth(widths[i] * 6);
+    }
+}
+
+function addBalancesAdjHead(ws) {
+    const cells = [
+        'DATE & TIME', 'Card No.', 'Changed from', 'Changed to', 'Change amount', 'User'
+    ];
+    const widths = [
+        3, 5, 3, 3, 3, 2
     ];
 
     for (let i = 0; i < cells.length; i++) {

@@ -1,5 +1,6 @@
 const xl = require('excel4node');
 const utils = require('../utils/utils');
+const salesReport = require('./sales');
 
 let headStyle;
 let headStyle2;
@@ -106,7 +107,10 @@ module.exports = class Summary{
             _num(data.rpp);
             _num(data.dt);
 
-            _price(data.totals.cash);
+            ws.cell(4, 6).string('Cash tips:');
+            ws.cell(5, 6).number(data.tipsCash).style(priceStyle);
+            // _price(data.totals.cash);
+            _formula(data.totals.cash + '-F5', priceStyle);
             _price(data.totals.card);
             _price(data.totals.invoice_ari);
             _price(data.totals.other);
@@ -130,8 +134,12 @@ module.exports = class Summary{
             const ws2 = wb.addWorksheet('Reconcile');
             initReconcileTemplate(ws2);
             setWS(ws2);
+
+            ws2.cell(4, 6).formula('Reports!F5').style(priceStyle);
+
             ws2.cell(1, 2).string(data.date);
-            ws2.cell(4, 2).number(data.totals.cash);
+            // ws2.cell(4, 2).number(data.totals.cash);
+            ws2.cell(4, 2).formula('Reports!F2');
             ws2.cell(5, 2).number(data.totals.card);
             ws2.cell(6, 2).number(data.totals.prepaid);
             ws2.cell(7, 2).number(data.totals.loyalty);
@@ -158,11 +166,11 @@ module.exports = class Summary{
         });
     }
     
-    static weekly(days){
+    static weekly(days, sales){
         return new Promise((resolve, reject) => {
             const wb = new xl.Workbook();
             this.initStyle(wb);
-            const ws = wb.addWorksheet('Reports');
+            const ws = wb.addWorksheet('Summary');
             addWeeklySumHead(ws);
             setWS(ws);
 
@@ -191,6 +199,10 @@ module.exports = class Summary{
                 _price(day.detailingTotal);
             }
 
+            if(sales){
+                salesReport.daily(sales, wb);
+            }
+
             const filename = utils.rndSlug('.xlsx');
             wb.write('files/' + filename, err => {
                 if(err){
@@ -208,7 +220,7 @@ function addDailySumHead(ws){
     const cells = [
         'DATE', 'CW', 'PP', 'RPP', 'DT',
         'CASH', 'CREDIT', 'INVOICE / ARI', 'VALUE OF FREE WASHES', 'PREPAID',
-        'LOYALTY', 'ALL CAR WASHES', 'DISCOUNT', 'EXTRAS', 'TIPS', 'PP CARD NUMBER', 'TOTAL VALUE OF PREPAID CARDS',
+        'LOYALTY', 'ALL CAR WASHES', 'DISCOUNT', 'EXTRAS', 'TOTAL TIPS', 'PP CARD NUMBER', 'TOTAL VALUE OF PREPAID CARDS',
         'TOTAL OF ALL VALUE OF DETAIL JOBS'
     ];
     const widths = [
@@ -227,11 +239,11 @@ function addWeeklySumHead(ws){
     const cells = [
         'DATE', 'CW', 'PP', 'RPP', 'DT',
         'CASH', 'CREDIT', 'CASH + CREDIT', '% CASH VS CREDIT', 'VALUE OF FREE WASHES', 'INVOICE / ARI', 'PP VALUE',
-        'ALL CAR WASHES', 'DISCOUNT', 'EXTRA', 'TOTAL VALUE OF PREPAID CARDS', 'TOTAL OF ALL VALUE OF DETAIL JOBS',
+        'ALL CAR WASHES', 'DISCOUNT', 'EXTRA', 'TIPS', 'TOTAL VALUE OF PREPAID CARDS', 'TOTAL OF ALL VALUE OF DETAIL JOBS',
 
     ];
     const widths = [
-        3, 1, 1, 1, 1, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 3, 4
+        3, 1, 1, 1, 1, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 3, 4
     ];
 
     for(let i = 0; i < cells.length; i++){
@@ -253,7 +265,9 @@ function initReconcileTemplate(ws){
     ws.cell(3, 2).string('POS').style(centerAlignStyle);
     ws.cell(3, 3).string('LIVE').style(centerAlignStyle);
 
-    ws.cell(4, 1).string('Cash');
+    ws.cell(3, 6).string('Cash tips').style(headStyle2);
+
+    ws.cell(4, 1).string('Cash (Net of tips)');
     ws.cell(5, 1).string('Credit/Debit Card');
     ws.cell(6, 1).string('Prepaid Card');
     ws.cell(7, 1).string('Loyalty Card');
@@ -351,4 +365,8 @@ function _price_m(val){
 }
 function _percent(val){
     c_ws.cell(c_row, c_col++).number(val).style(percentStyle);
+}
+
+function _formula(val, style){
+    c_ws.cell(c_row, c_col++).formula(val).style(style);
 }

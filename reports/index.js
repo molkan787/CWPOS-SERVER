@@ -42,6 +42,23 @@ module.exports = class Reports {
         }
     }
 
+    static async genWeeklySummaryWithSales(date_from, date_to) {
+        try {
+            const cond = wb.dateRange({ date_from, date_to }, 'date_added', 'status = 1');
+            const cond2 = wb.dateRange({ date_from, date_to }, 'day', '', true);
+            const orders = await Order.query().eager('[cashier, transaction.[prepaid, loyalty]]').whereRaw(cond);
+            const stats = await Stats.query().whereRaw(cond2);
+
+            const _summary = this.prepareWeeklySummaryData(orders, stats, date_from, date_to);
+            const _sales = this.prepareDailySalesData(orders);
+
+            return await summary.weekly(_summary, _sales);
+        } catch (error) {
+            console.log(error);
+            return false;
+        }
+    }
+
     static async genDailySales(day){
         try {
             const cond = wb.dateRange({date_from: day, date_to: day}, null, 'status = 1');
@@ -71,6 +88,24 @@ module.exports = class Reports {
         }
     }
 
+    static async genBalancesAdjust(date_from, date_to, card_type){
+        const isPP = card_type == 'prepaid';
+        const eagerName = isPP ? 'prepaid' : 'loyalty';
+        const axType = isPP ? AC.TYPE_PREPAID_BALANCE_ADJUST : AC.TYPE_LOYALTY_BALANCE_ADJUST;
+        try {
+            const actions = await Action.getBulkByTypeDateRange(
+                axType,
+                date_from, date_to,
+                `[user, ${eagerName}]`
+            );
+
+            return await sales.cardsBalanceAdjustment(actions, card_type);
+        } catch (error) {
+            console.log(error);
+            return false;
+        }
+    }
+
     static prepareDailySummaryData(orders){
         const totals = Factory.genPayMethodMap();
         const sales = {
@@ -90,6 +125,7 @@ module.exports = class Reports {
             washesAmount: 0,
             discount: 0,
             tips: 0,
+            tipsCash: 0,
             extra: 0,
             newPrepaids: [],
             newPrepaidsTotal: 0,
@@ -106,7 +142,7 @@ module.exports = class Reports {
             data.washesAmount += values.washes;
             data.discount += order.totals.discount || 0;
             data.tips += values.tips || 0;
-            data.extra += order.totals.extraCharge || 0;
+            data.extra += (order.totals.extraCharge || 0) + (values.extras || 0);
             data.newPrepaids.push(...prepaidCards.barcodes);
             data.newPrepaidsTotal += prepaidCards.total;
             data.detailingTotal += values.detailing;
@@ -119,6 +155,10 @@ module.exports = class Reports {
             sales.certificate += values.certificate;
             sales.discount += values.discount;
             sales.tips += values.tips;
+
+            if(paym == 'cash'){
+                data.tipsCash += values.tips;
+            }
         }
         return data;        
     }
@@ -155,7 +195,7 @@ module.exports = class Reports {
             day.allWashesValue += values.washes;
             day.detailingTotal += values.detailing;
             day.discount += order.totals.discount;
-            day.extra += order.totals.extraCharge;
+            day.extra += order.totals.extraCharge + values.extras;
             day.tips += order.totals.tips;
             day.newPrepaid += this.getPrepaidCards(order).total;
         }
@@ -224,9 +264,9 @@ module.exports = class Reports {
         const paym = order.pay_method;
         const tx = order.transaction;
         if(paym == 'prepaid' && tx){
-            return 'PREPAID: ' + tx.prepaid.barcode;
+            return 'PREPAID: ' + (tx.prepaid || {}).barcode || 'xxxx';
         }else if(paym == 'loyalty' && tx){
-            return 'LOYALTY: ' + tx.loyalty.barcode;
+            return 'LOYALTY: ' + (tx.loyalty || {}).barcode || 'xxxx';
         }else if(paym == 'other'){
             const reason = (order.other_data.reasons || {}).free || '';
             return Factory.getPaymText('other') + "\nReason: \"" + reason + '"';
@@ -269,7 +309,7 @@ module.exports = class Reports {
                 washes += price;
             }else if(cat == 3){
                 detailing += price;
-            }else if(cat == 4){
+            }else if(cat == 4 || cat == 8){
                 extras += price;
             }else if(cat == 5){
                 others += price;

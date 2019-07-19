@@ -40,6 +40,22 @@ module.exports = class Action extends Model{
                     to: 'loyalty_cards.id'
                 }
             },
+            prepaid: {
+                relation: Model.BelongsToOneRelation,
+                modelClass: __dirname + '/PrepaidCard',
+                join: {
+                    from: 'actions.ref2',
+                    to: 'prepaid_cards.id'
+                }
+            },
+            user: {
+                relation: Model.BelongsToOneRelation,
+                modelClass: __dirname + '/User',
+                join: {
+                    from: 'actions.ref3',
+                    to: 'users.id'
+                }
+            },
         };
     }
 

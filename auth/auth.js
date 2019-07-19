@@ -35,10 +35,11 @@ module.exports = class Auth{
         return new Promise( async (resolve, reject) => {
             try {
                 const userToken = await UserToken.query().findOne({token});
-                if(userToken)
-                    resolve(true);
-                else
+                if (userToken){
+                    resolve(userToken.user_id);
+                }else{
                     resolve(false);
+                }
             } catch (error) {
                 reject(error);
             }

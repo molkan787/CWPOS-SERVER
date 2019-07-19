@@ -12,6 +12,9 @@ require('./models/index')();
 const auth = require('./auth/auth');
 const router = require('./routes/index');
 
+const bots = require('./bots/index');
+bots.init();
+
 const server = restify.createServer();
 
 const cors = corsMiddleware({
@@ -22,13 +25,15 @@ const cors = corsMiddleware({
 });
 server.pre(cors.preflight);
 server.use(cors.actual);
+
 server.use((req, res, next) => {
     if(req.route.path == '/auth' || req.route.path.split('/')[1] == 'download'){
       return next();
     }else{
       const token = req.headers['authorization'] || '---';
-      auth.checkToken(token).then(isValid => {
-        if(isValid || config.debug){
+      auth.checkToken(token).then(userId => {
+        if (userId || config.debug){
+          req.userId = userId || 0;
           next();
         }else{
           return next(new errors.UnauthorizedError());
@@ -39,6 +44,7 @@ server.use((req, res, next) => {
     }
   }
 );
+
 server.use(restify.plugins.queryParser());
 server.use(restify.plugins.bodyParser({ mapParams: false, requestBodyOnGet: true }));
 

@@ -30,11 +30,17 @@ async function generateReport(params){
         case 'daily-summary':
             filename = await reports.genDailySummary(params.day);
             break;
+        // case 'weekly-summary':
+        //     filename = await reports.genWeeklySummary(params.date_from, params.date_to);
+        //     break;
         case 'weekly-summary':
-            filename = await reports.genWeeklySummary(params.date_from, params.date_to);
+            filename = await reports.genWeeklySummaryWithSales(params.date_from, params.date_to);
             break;
         case 'loyalty-points':
             filename = await reports.genLoyaltyPointsAdding(params.date_from, params.date_to);
+            break;
+        case 'balance-adjust':
+            filename = await reports.genBalancesAdjust(params.date_from, params.date_to, params.card_type);
             break;
         default:
             throw new Error('Unknow Reports type.');

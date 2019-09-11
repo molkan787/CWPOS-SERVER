@@ -9,8 +9,8 @@ module.exports = class StatsNotifier{
 
     static init(){
         // this.send('<h1>Hello Test!</h1>')
-        this.start();
-        this.check();
+        // this.start();
+        // this.check();
     }
 
     static start(){
@@ -27,6 +27,11 @@ module.exports = class StatsNotifier{
         const d = new Date();
         const h = d.getHours();
         const m = d.getMinutes();
+
+        if(h == 0){
+            this.reset();
+            return;
+        }
         
         const validTime = (m < maxMinutes) && (h >= 9 && h <= 20) && (!this.sent[h]);
         if(validTime){

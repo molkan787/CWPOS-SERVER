@@ -5,28 +5,32 @@ const Stats = require('../models/Stats');
 const maxMinutes = 5;
 const checkInterval = (maxMinutes - 2) * 60 * 1000;
 
-module.exports = class StatsNotifier{
+class StatsNotifier{
 
     static init(){
         // this.send('<h1>Hello Test!</h1>')
-        // this.start();
-        // this.check();
+        this.start();
+        this.check();
     }
 
     static start(){
         this.reset();
         setInterval(() => this.check(), checkInterval);
+
+        const d = new Date();
+        this.check(d.getHours(), 1);
     }
 
     static reset(){
         this.prevStats = { cw: 0, pp: 0, rpp: 0, dt: 0 };
         this.sent = {};
+        this.data = {};
     }
 
-    static check(){
+    static async check(_h, _m){
         const d = new Date();
-        const h = d.getHours();
-        const m = d.getMinutes();
+        const h = _h || d.getHours();
+        const m = _m || d.getMinutes();
 
         if(h == 0){
             this.reset();
@@ -36,7 +40,11 @@ module.exports = class StatsNotifier{
         const validTime = (m < maxMinutes) && (h >= 9 && h <= 20) && (!this.sent[h]);
         if(validTime){
             this.sent[h] = true;
-            this.prepareData(h);
+            try {
+                this.data[h] = await this.prepareData(h);
+            } catch (error) {
+                console.error(error);
+            }
         }
     }
 
@@ -51,35 +59,56 @@ module.exports = class StatsNotifier{
 
         const stats = { cw, pp, rpp, dt };
         const data = { stats, totalCW: curr.cw };
-        this.prepareHTML(data, hour);
+        // this.prepareHTML(data, hour); //
+        return data;
     }
 
-    static prepareHTML(data, hour){
+    static getHTMLViewWithData(additionalHTML){
+        const d = new Date();
+        const h = d.getHours();
+        const data = this.data[h];
+        if(!data) return false;
+        return this.prepareHTML(data, h, additionalHTML);
+    }
+
+    static prepareHTML(data, hour, additionalHTML){
         // console.log(data);
         const st = data.stats;
         const html = `
-            <h3>APOS STATS: ${(hour - 1) + 'h => ' + hour + 'h'}</h3>
-            <table border="1" style="border-collapse: collapse;">
-                <thead>
-                    <tr>
-                        <th style="padding: 4px">CW</th>
-                        <th style="padding: 4px">PP</th>
-                        <th style="padding: 4px">RPP</th>
-                        <th style="padding: 4px">DT</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="padding: 4px">${st.cw}</td>
-                        <td style="padding: 4px">${st.pp}</td>
-                        <td style="padding: 4px">${st.rpp}</td>
-                        <td style="padding: 4px">${st.dt}</td>
-                    </tr>
-                </tbody>
-            </table>
-            <h4>Total Car Wash: ${data.totalCW}</h4>
+            <style>
+                table tr, table td{
+                    text-align: center;
+                }
+            </style>
+            <div class="card" style="width: 18rem;">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">APOS STATS</h5>
+                    <h6 class="card-subtitle mb-2">Hour: ${(hour - 1) + 'h => ' + hour + 'h'}</h6>
+                    <table border="1" class="table table-bordered" style="border-collapse: collapse;width: 100%;max-width: 400px;">
+                        <thead>
+                            <tr>
+                                <th scope="col style="padding: 4px">CW</th>
+                                <th scope="col style="padding: 4px">PP</th>
+                                <th scope="col style="padding: 4px">RPP</th>
+                                <th scope="col style="padding: 4px">DT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 4px">${st.cw}</td>
+                                <td style="padding: 4px">${st.pp}</td>
+                                <td style="padding: 4px">${st.rpp}</td>
+                                <td style="padding: 4px">${st.dt}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h6>Total Car Wash: ${data.totalCW}</h6>
+            
+                </div>
+            </div> ${additionalHTML || ''}
         `;
-        this.send(html);
+        // this.send(html);
+        return html;
     }
 
     static send(htmlContent){
@@ -95,4 +124,8 @@ module.exports = class StatsNotifier{
         console.log('Email sent!')
     }
 
+
+
 }
+module.exports = StatsNotifier;
+StatsNotifier.init();

@@ -26,8 +26,11 @@ const editCardBalance = require('./editCardBalance');
 const editCardBarcode = require('./editCardBarcode')
 const importData = require('./import');
 const exportData = require('./export');
+const StatsWebPage = require('./stats');
 
 module.exports = server => {
+    server.get('/stats', StatsWebPage);
+    server.post('/stats', StatsWebPage);
     server.get('/asd', asd);
     // server.get('/client_history/:phone', clientHistory);
     server.get('/clcref/:by/:ref', clcref);

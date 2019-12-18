@@ -19,6 +19,7 @@
     "objection": "^1.6.3",
     "randomstring": "^1.1.5",
     "restify": "^8.1.1",
+    "restify-cookies": "^0.2.5",
     "restify-cors-middleware": "^1.1.1",
     "restify-errors": "^7.0.0",
     "xlsx": "^0.14.3"

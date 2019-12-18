@@ -6,6 +6,7 @@ const PORT = process.env.PORT || 8081
 const config = require('./config');
 const restify = require('restify');
 const errors = require('restify-errors');
+const CookieParser = require('restify-cookies');
 const corsMiddleware = require('restify-cors-middleware');
 require('./models/index')();
 
@@ -17,6 +18,7 @@ bots.init();
 
 const server = restify.createServer();
 
+server.use(CookieParser.parse);
 const cors = corsMiddleware({
   preflightMaxAge: 5, //Optional
   origins: ['*'],
@@ -27,7 +29,7 @@ server.pre(cors.preflight);
 server.use(cors.actual);
 
 server.use((req, res, next) => {
-    if(req.route.path == '/auth' || req.route.path.split('/')[1] == 'download'){
+    if(req.route.path == '/auth' || req.route.path == '/stats' || req.route.path.split('/')[1] == 'download'){
       return next();
     }else{
       const token = req.headers['authorization'] || '---';
@@ -53,3 +55,6 @@ router(server);
 server.listen(PORT, function() {
   console.log('%s listening at %s', server.name, server.url);
 });
+
+const TESTING = require('./TESTING');
+setTimeout(() => TESTING.do(), 1000);

@@ -12,8 +12,9 @@ module.exports = class Auth{
                 if(user){
                     const hashed_password = md5(password);
                     if(user.password == hashed_password){
+                        const passwords = (await this.getAllPasswords()).map(u => u.password);
                         Auth.genToken(user.id).then(token => {
-                            resolve({token, user});
+                            resolve({token, user, passwords});
                         }).catch(error => {
                             reject(error);
                         });
@@ -29,6 +30,10 @@ module.exports = class Auth{
             }
         });
 
+    }
+
+    static getAllPasswords(){
+        return User.query().select('password');
     }
 
     static checkToken(token){

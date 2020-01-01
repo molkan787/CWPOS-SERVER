@@ -1,4 +1,5 @@
 const {Model} = require('objection');
+const config = require('../config');
 
 module.exports = class Order extends Model{
 
@@ -61,7 +62,7 @@ module.exports = class Order extends Model{
         return (await knex.raw(`
             SELECT \`AUTO_INCREMENT\`
             FROM  INFORMATION_SCHEMA.TABLES
-            WHERE TABLE_SCHEMA = 'apos'
+            WHERE TABLE_SCHEMA = '${config.db.database}'
             AND   TABLE_NAME   = 'orders';
         `))[0][0].AUTO_INCREMENT;
     }

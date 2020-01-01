@@ -131,8 +131,22 @@ module.exports = class XlBuilder{
         }
     }
 
-    formula(val){
-        return this.ws.cell(this.c_row, this.c_col++).formula(val).style(this.fontStyle);
+    style(name){
+        return this.ws.cell(this.c_row, this.c_col).style(this.styles[name]);
+    }
+    background(color){
+        const style = this.workbook.createStyle({
+            fill: {
+                type: 'pattern',
+                fgColor: color,
+                bgColor: color,
+            }
+        });
+        return this.ws.cell(this.c_row, this.c_col).style(style);
+    }
+
+    formula(val, style){
+        return this.ws.cell(this.c_row, this.c_col++).formula(val).style(this.styles[style || 'price']).style(this.fontStyle);
     }
     num(val){
         return this.ws.cell(this.c_row, this.c_col++).number(val).style(this.fontStyle);
@@ -173,9 +187,11 @@ module.exports = class XlBuilder{
             },
             alignment: {
                 horizontal: 'center',
+                vertical: 'center',
                 shrinkToFit: true, 
                 wrapText: true
             },
+            border: XlBuilder.genBorder('#ffffff'),
         });
         o.head2 = wb.createStyle({
             fill: {
@@ -229,24 +245,7 @@ module.exports = class XlBuilder{
             },
         });
         o.border = wb.createStyle({
-            border: {
-                left: {
-                    style: 'thin',
-                    color: '#000000'
-                },
-                right: {
-                    style: 'thin',
-                    color: '#000000'
-                },
-                top: {
-                    style: 'thin',
-                    color: '#000000'
-                },
-                bottom: {
-                    style: 'thin',
-                    color: '#000000'
-                },
-            },
+            border: XlBuilder.genBorder('#000000'),
         });
         o.centerAlign = wb.createStyle({
             alignment: {
@@ -291,4 +290,26 @@ module.exports = class XlBuilder{
         return o;
     }
 
+    static genBorder(color){
+        return {
+            left: {
+                style: 'thin',
+                color
+            },
+            right: {
+                style: 'thin',
+                color
+            },
+            top: {
+                style: 'thin',
+                color
+            },
+            bottom: {
+                style: 'thin',
+                color
+            },
+        }
+    }
+
 }
+

@@ -1,5 +1,3 @@
-const summary = require('./summary');
-const sales = require('./sales');
 const Factory = require('./factory');
 const time = require('../utils/time');
 const wb = require('../utils/whereBuilder');
@@ -10,6 +8,8 @@ const consts = require('./consts');
 const Action = require('../Actions/Action');
 const AC = require('../Actions/ActionConsts');
 const DailyReports = require('./dailyReports');
+const WeeklyReports = require('./weeklyReports');
+const Other = require('./other');
 
 module.exports = class Reports {
 
@@ -29,37 +29,7 @@ module.exports = class Reports {
         }
     }
 
-    static async genDailySummary(day){
-        try {
-            const cond = wb.dateRange({date_from: day, date_to: day}, null, 'status = 1');
-            const orders = await Order.query().eager('transaction.[prepaid, loyalty]').whereRaw(cond);
-            const data = this.prepareDailySummaryData(orders);
-            const stats = await Stats.getTodays(time.getDateKey(day));
-            const date = time.timestampToDate(day);
-
-            return await summary.daily({...stats, ...data, date});
-        } catch (error) {
-            console.log(error);
-            return false;
-        }
-    }
-
-    static async genWeeklySummary(date_from, date_to){
-        try {
-            const cond = wb.dateRange({date_from, date_to}, 'date_added', 'status = 1');
-            const cond2 = wb.dateRange({date_from, date_to}, 'day', '', true);
-            const orders = await Order.query().whereRaw(cond);
-            const stats = await Stats.query().whereRaw(cond2);
-
-            const data = this.prepareWeeklySummaryData(orders, stats, date_from, date_to);
-            return await summary.weekly(data);
-        } catch (error) {
-            console.log(error);
-            return false;
-        }
-    }
-
-    static async genWeeklySummaryWithSales(date_from, date_to) {
+    static async genWeeklyReports(date_from, date_to){
         try {
             const cond = wb.dateRange({ date_from, date_to }, 'date_added', 'status = 1');
             const cond2 = wb.dateRange({ date_from, date_to }, 'day', '', true);
@@ -69,20 +39,7 @@ module.exports = class Reports {
             const _summary = this.prepareWeeklySummaryData(orders, stats, date_from, date_to);
             const _sales = this.prepareDailySalesData(orders);
 
-            return await summary.weekly(_summary, _sales);
-        } catch (error) {
-            console.log(error);
-            return false;
-        }
-    }
-
-    static async genDailySales(day){
-        try {
-            const cond = wb.dateRange({date_from: day, date_to: day}, null, 'status = 1');
-            const orders = await Order.query().eager('[cashier, transaction.[prepaid, loyalty]]').whereRaw(cond);
-            const data = this.prepareDailySalesData(orders);
-
-            return await sales.daily(data);
+            return await WeeklyReports.gen(_summary, _sales);
         } catch (error) {
             console.log(error);
             return false;
@@ -91,14 +48,13 @@ module.exports = class Reports {
 
     static async genLoyaltyPointsAdding(date_from, date_to) {
         try {
-            const cond = wb.dateRange({ date_from, date_to }, 'date_added');
             const actions = await Action.getBulkByTypeDateRange(
                 AC.TYPE_LOYALTY_POINT_ADD_AFTER_SALE,
                 date_from, date_to,
                 'loyalty'
             );
 
-            return await sales.loyaltyPoints(actions);
+            return await Other.loyaltyPoints(actions);
         } catch (error) {
             console.log(error);
             return false;
@@ -116,7 +72,7 @@ module.exports = class Reports {
                 `[user, ${eagerName}]`
             );
 
-            return await sales.cardsBalanceAdjustment(actions, card_type);
+            return await Other.cardsBalanceAdjustment(actions, card_type);
         } catch (error) {
             console.log(error);
             return false;
@@ -185,7 +141,7 @@ module.exports = class Reports {
     }
 
     static prepareWeeklySummaryData(orders, stats, date_from, date_to){
-        const map = Factory.genDaysMap(date_from, date_to, wsr_template, {addSum: true, modifier: wsr_modifier});
+        const map = Factory.genDaysMap(date_from, date_to, wsr_template, {modifier: wsr_modifier});
 
         for(let i = 0; i < orders.length; i++){
             const order = orders[i];
@@ -205,6 +161,9 @@ module.exports = class Reports {
                 case 'prepaid':
                     day.prepaid += order.total;
                     break;
+                case 'loyalty':
+                    day.loyalty += order.total;
+                    break;
                 case 'other':
                     day.freeWashesValue += order.total;
                     break;
@@ -213,10 +172,15 @@ module.exports = class Reports {
             }
 
             const values = this.extractValues(order);
-            day.allWashesValue += values.washes;
+            day.washes += values.washes;
+            day.ppWashes += values.ppWashes;
+            day.extra += values.extras;
+            day.ppExtra += values.ppExtras;
             day.detailingTotal += values.detailing;
+            day.others += values.others;
+            day.certificate += values.certificate;
             day.discount += order.totals.discount;
-            day.extra += order.totals.extraCharge + values.extras;
+            day.extraCharge += order.totals.extraCharge;
             day.tips += order.totals.tips;
             day.newPrepaid += this.getPrepaidCards(order).total;
         }
@@ -231,28 +195,6 @@ module.exports = class Reports {
             day.dt = stat.dt;
         }
 
-        const sum = map.days['sum'];
-        for(let i = 0; i < map.list.length - 1; i++){
-            const day = map.list[i];
-            day.cash_plus_credit = day.cash + day.credit;
-            day.cash_vs_credit = (day.cash_plus_credit == 0) ? 0 : day.cash / day.cash_plus_credit;
-
-            sum.cw += day.cw;
-            sum.pp += day.pp;
-            sum.rpp += day.rpp;
-            sum.dt += day.dt;
-            sum.cash += day.cash;
-            sum.credit += day.credit;
-            sum.cash_plus_credit += day.cash_plus_credit;
-            sum.freeWashesValue += day.freeWashesValue;
-            sum.invoice_ari += day.invoice_ari;
-            sum.prepaid += day.prepaid;
-            sum.allWashesValue += day.allWashesValue;
-            sum.discount += day.discount;
-            sum.extra += day.extra;
-            sum.newPrepaid += day.newPrepaid;
-            sum.detailingTotal += day.detailingTotal;
-        }
         return map.list;
     }
 
@@ -443,12 +385,18 @@ const wsr_template = {
     freeWashesValue: 0,
     invoice_ari: 0,
     prepaid: 0,
-    allWashesValue: 0,
-    discount: 0,
+    loyalty: 0,
+    washes: 0,
+    ppWashes: 0,
     extra: 0,
+    ppExtra: 0,
+    others: 0,
+    discount: 0,
     tips: 0,
+    extraCharge: 0,
     newPrepaid: 0,
     detailingTotal: 0,
+    certificate: 0,
 };
 
 function wsr_modifier(obj, day){

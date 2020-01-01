@@ -31,9 +31,9 @@ module.exports = class DataExporter{
 async function exportPOLCards(type){
     let cards;
     if(type == 'prepaids'){
-        cards = await PrepaidCard.query();
+        cards = await PrepaidCard.query().eager('client');
     }else if(type == 'loyalties'){
-        cards = await LoyaltyCard.query();
+        cards = await LoyaltyCard.query().eager('client');
     }
     if(cards){
         return await genPOLCardsExcelFile(cards, type);
@@ -64,8 +64,13 @@ function genPOLCardsExcelFile(cards, type){
         });
     
         ws.column(1).setWidth(32);
+        ws.column(3).setWidth(4);
+        ws.column(4).setWidth(16);
+        ws.column(5).setWidth(16);
         ws.cell(1, 1).string(Schema.barcode);
         ws.cell(1, 2).string(Schema.balance);
+        ws.cell(1, 4).string('Client name');
+        ws.cell(1, 5).string('Phone number');
     
         const l = cards.length;
         let y = 2;
@@ -73,6 +78,12 @@ function genPOLCardsExcelFile(cards, type){
             const card = cards[i];
             ws.cell(y, 1).string(card.barcode);
             ws.cell(y, 2).number(card.balance / 100).style(priceStyle);
+            if(card.client){
+                const c = card.client;
+                const fullname = c.first_name + ' ' + c.last_name;
+                ws.cell(y, 4).string(fullname);
+                ws.cell(y, 5).string(formatPhoneNumber(c.phone));
+            }
             y++;
         }
     
@@ -86,6 +97,16 @@ function genPOLCardsExcelFile(cards, type){
             }
         });
     });
+}
+
+function formatPhoneNumber(num){
+    let result = '';
+    for(let i = 0; i < num.length && i < 10; i++){
+        if(i == 3 || i == 6)
+            result += '-';
+        result += num.charAt(i);
+    }
+    return result;
 }
 
 function genPOLCardHistoryFile(card, actions, type){

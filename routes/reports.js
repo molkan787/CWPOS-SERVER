@@ -24,17 +24,11 @@ async function generateReport(params){
     const type = params.type;
     let filename = null;
     switch (type) {
-        case 'daily-sales':
-            filename = await reports.genDailySales(params.day);
-            break;
         case 'daily-summary':
-            filename = await reports.genDailySummary(params.day);
+            filename = await reports.genDailyReports(params.day);
             break;
-        // case 'weekly-summary':
-        //     filename = await reports.genWeeklySummary(params.date_from, params.date_to);
-        //     break;
         case 'weekly-summary':
-            filename = await reports.genWeeklySummaryWithSales(params.date_from, params.date_to);
+            filename = await reports.genWeeklyReports(params.date_from, params.date_to);
             break;
         case 'loyalty-points':
             filename = await reports.genLoyaltyPointsAdding(params.date_from, params.date_to);

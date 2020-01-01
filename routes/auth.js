@@ -15,6 +15,6 @@ module.exports = async (req, res, next) => {
         
     } catch (error) {
         console.error(error);
-        return next(new errors.InternalError('Error:001'));
+        return next(new errors.InternalError('Error:001 ' + error.toString()));
     }
 };

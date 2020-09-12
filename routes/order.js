@@ -17,8 +17,12 @@ module.exports = async (req, res, next) => {
     orderData.date_added = time.now();
 
     try {
-        if(orderData.pay_method == 'invoice_ari' && invoiceData.clientName){
-            orderData.client_id = await Client.getCompanyIdByName(invoiceData.clientName);
+        if(orderData.pay_method == 'invoice_ari'){
+            if(invoiceData.card){
+                orderData.other_data.ari_card = invoiceData.card;
+            }else if(invoiceData.clientName){
+                orderData.client_id = await Client.getCompanyIdByName(invoiceData.clientName);
+            }
         }
 
         const _order = await Order.query().insert(orderData);

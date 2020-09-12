@@ -29,8 +29,8 @@ async function refundOrder(orderId){
     
     await Order.query().patch({status: 3}).where({id});
 
-    const stats = Reports.getOrderStats(_order);
-    const statsDay = time.roundToDay(_order.date_added);
+    const stats = Reports.getOrderStats(_order, true);
+    const statsDay = time.getDateKey(_order.date_added);
     await Stats.substract(stats, statsDay);
     await undoChanges(orderId);
 

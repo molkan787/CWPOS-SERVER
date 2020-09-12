@@ -231,12 +231,19 @@ module.exports = class Reports {
             return 'PREPAID: ' + (tx.prepaid || {}).barcode || 'xxxx';
         }else if(paym == 'loyalty' && tx){
             return 'LOYALTY: ' + (tx.loyalty || {}).barcode || 'xxxx';
+        }else if(paym == 'invoice_ari'){
+            return this.getInvoiceAriPaymentText(order);
         }else if(paym == 'other'){
             const reason = (order.other_data.reasons || {}).free || '';
             return Factory.getPaymText('other') + "\nReason: \"" + reason + '"';
         }else{
             return Factory.getPaymText(order.pay_method);
         }
+    }
+
+    static getInvoiceAriPaymentText({ other_data }){
+        const { ari_card } = other_data;
+        return ari_card ? `Ari Card (${ari_card.number})` : 'Invoice';
     }
 
     static getAssociatedCard(transaction){
@@ -319,12 +326,17 @@ module.exports = class Reports {
         return result;
     }
 
-    static getOrderStats(order){
+    static getOrderStats(order, cancelling){
+        const { total, pay_method } = order;
         const stats = {
             cw: 0,
             pp: 0,
             rpp: 0,
             dt: 0,
+            cs: pay_method == 'cash' ? total : 0,
+            cc: pay_method == 'card' ? total : 0,
+            cxc: cancelling ? -1 : 0,
+            cxv: cancelling ? -total : 0
         }
 
         const products = order.items.products;

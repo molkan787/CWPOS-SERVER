@@ -21,7 +21,14 @@ module.exports = async (req, res, next) => {
             if(invoiceData.card){
                 orderData.other_data.ari_card = invoiceData.card;
             }else if(invoiceData.clientName){
-                orderData.client_id = await Client.getCompanyIdByName(invoiceData.clientName);
+                const cn = invoiceData.clientName.trim();
+                const isCardNumber = /^\d+$/.test(cn) && cn.length > 10;
+                if(isCardNumber){
+                    const ariCard = { number: cn, expirationDate: "", holder: {"firstName":"","lastName":"","title":""} };
+                    orderData.other_data.ari_card = ariCard;
+                }else{
+                    orderData.client_id = await Client.getCompanyIdByName(invoiceData.clientName);
+                }
             }
         }
 

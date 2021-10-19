@@ -16,7 +16,7 @@ module.exports = class Reports {
     static async genDailyReports(day){
         try {
             const cond = wb.dateRange({date_from: day, date_to: day}, null, 'status = 1');
-            const orders = await Order.query().eager('[cashier, transaction.[prepaid, loyalty]]').whereRaw(cond);
+            const orders = await Order.query().eager('[cashier, client, transaction.[prepaid, loyalty]]').whereRaw(cond);
             const data = this.prepareDailySummaryData(orders);
             const sales = this.prepareDailySalesData(orders);
             const stats = await Stats.getTodays(time.getDateKey(day));
@@ -241,9 +241,17 @@ module.exports = class Reports {
         }
     }
 
-    static getInvoiceAriPaymentText({ other_data }){
+    static getInvoiceAriPaymentText({ other_data, client }){
         const { ari_card } = other_data;
-        return ari_card ? `Ari Card (${ari_card.number})` : 'Invoice';
+        if(ari_card){
+            return `Ari Card (${ari_card.number})`;
+        }else if(client){
+            const { first_name, last_name } = client;
+            const fullname = (first_name + ' ' + last_name).trim();
+            return `Invoice (${fullname})`;
+        }else{
+            return 'Invoice';
+        }
     }
 
     static getAssociatedCard(transaction){

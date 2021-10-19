@@ -33,7 +33,7 @@ module.exports = class Reports {
         try {
             const cond = wb.dateRange({ date_from, date_to }, 'date_added', 'status = 1');
             const cond2 = wb.dateRange({ date_from, date_to }, 'day', '', true);
-            const orders = await Order.query().eager('[cashier, transaction.[prepaid, loyalty]]').whereRaw(cond);
+            const orders = await Order.query().eager('[cashier, client, transaction.[prepaid, loyalty]]').whereRaw(cond);
             const stats = await Stats.query().whereRaw(cond2);
 
             const _summary = this.prepareWeeklySummaryData(orders, stats, date_from, date_to);
